@@ -1,6 +1,26 @@
 /*
-Fiche - terminal pastebin
-Still in development, not usable!
+Fiche - Command line pastebin for sharing terminal output.
+
+-------------------------------------------------------------------------------
+
+License: MIT (http://www.opensource.org/licenses/mit-license.php)
+Repository: https://github.com/solusipse/fiche/
+Live example: http://code.solusipse.net/
+
+-------------------------------------------------------------------------------
+
+usage: fiche [-bdpqs].
+             [-d host_domain.com] [-p port] [-s slug_size]
+             [-o output_directory] [-b buffer_size] [-q queue_size]
+
+Compile with Makefile or manually with -O2 and -pthread flags.
+To install use `make install` command.
+
+Use netcat to push text - example:
+
+$ cat fiche.c | nc localhost 9999
+
+-------------------------------------------------------------------------------
 */
 
 #include "fiche.h"
@@ -136,8 +156,7 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 
 void generate_url(char *buffer, char *slug)
 {
-    int i;
-    int time_seed = time(0);
+    int i, time_seed = time(0);
     memset(slug, '\0', sizeof(slug));
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
@@ -148,7 +167,7 @@ void generate_url(char *buffer, char *slug)
 
     while (create_directory(slug) == -1)
     {
-        int symbol_id = rand() % strlen(symbols);
+        int symbol_id = rand_r(&time_seed) % strlen(symbols);
         slug[strlen(slug)] = symbols[symbol_id];
     }
 
@@ -157,7 +176,7 @@ void generate_url(char *buffer, char *slug)
 
 int create_directory(char *slug)
 {
-    char *directory = malloc(100);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug));
 
     strcpy(directory, BASEDIR);
     strcat(directory, slug);

@@ -1,28 +1,49 @@
 /*
-Fiche - terminal pastebin
+Fiche - Command line pastebin for sharing terminal output.
+
+-------------------------------------------------------------------------------
+
+License: MIT (http://www.opensource.org/licenses/mit-license.php)
+Repository: https://github.com/solusipse/fiche/
+Live example: http://code.solusipse.net/
+
+-------------------------------------------------------------------------------
+
+usage: fiche [-bdpqs].
+             [-d host_domain.com] [-p port] [-s slug_size]
+             [-o output_directory] [-b buffer_size] [-q queue_size]
+
+Compile with Makefile or manually with -O2 and -pthread flags.
+To install use `make install` command.
+
+Use netcat to push text - example:
+
+$ cat fiche.c | nc localhost 9999
+
+-------------------------------------------------------------------------------
 */
 
 #ifndef FICHE_H
 #define FICHE_H
 
+#include <time.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#include <sys/types.h> 
+#include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <pthread.h>
-#include <time.h>
-#include <sys/stat.h>
 
-int BUFSIZE = 8192;
-int QUEUE_SIZE = 100;
+char *BASEDIR;
 int PORT = 9999;
 int SLUG_SIZE = 4;
-char *BASEDIR;
+int BUFSIZE = 8192;
+int QUEUE_SIZE = 100;
 char DOMAIN[128] = "http://localhost/";
 const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
 
