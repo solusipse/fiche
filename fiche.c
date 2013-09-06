@@ -181,8 +181,8 @@ int create_directory(char *slug)
     strcpy(directory, BASEDIR);
     strcat(directory, slug);
 
-    mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH);
-    int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH);
+    mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
+    int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
 
     free(directory);
 
