@@ -79,6 +79,21 @@ Slug size: ```yourserver.com/SLUG_OF_CHOSEN_LENGTH/```.
 - Buffer size
 - Queue size
 
+## Running as service ##
+
+You can run fiche as service, there is simple systemd example:
+
+```
+[Unit]
+Description=FICHE-SERVER
+
+[Service]
+ExecStart=/usr/local/bin/fiche -d code.solusipse.net -o /home/www/code/
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Webserver ##
 
 To make files available for users, you need to host them somehow. Http server is easiest option. Just set root 
