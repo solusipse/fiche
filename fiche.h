@@ -39,6 +39,7 @@ $ cat fiche.c | nc localhost 9999
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+int time_seed;
 char *BASEDIR;
 int PORT = 9999;
 int SLUG_SIZE = 4;

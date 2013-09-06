@@ -27,7 +27,7 @@ $ cat fiche.c | nc localhost 9999
 
 int main(int argc, char **argv)
 {
-    srand((unsigned int) time(0));
+    time_seed = time(0);
 
     set_basedir();
     parse_parameters(argc, argv);
@@ -156,7 +156,7 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 
 void generate_url(char *buffer, char *slug)
 {
-    int i, time_seed = time(0);
+    int i;
     memset(slug, '\0', sizeof(slug));
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
