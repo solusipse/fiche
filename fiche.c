@@ -29,8 +29,10 @@ int main(int argc, char **argv)
 {
     time_seed = time(0);
 
-    set_basedir();
     parse_parameters(argc, argv);
+    if (BASEDIR == NULL)
+        set_basedir();
+    
     startup_message();
 
     int listen_socket, address_lenght, optval = 1;
