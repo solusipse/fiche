@@ -79,6 +79,26 @@ Slug size: ```yourserver.com/SLUG_OF_CHOSEN_LENGTH/```.
 - Buffer size
 - Queue size
 
-### License ###
+## Webserver ##
+
+To make files available for users, you need to host them somehow. Http server is easiest option. Just set root 
+directory to ```BASEDIR```. **Remember that you have to distribute these files as plain text for safety measures!**
+
+There is sample configuration for nginx:
+
+```
+server {
+    listen 80;
+    server_name mysite.com www.mysite.com;
+    add_header Content-Type text/plain;
+
+    location / {
+            root /home/www/code/;
+            index index.html;
+    }
+}
+```
+
+## License ##
 
 Fiche is MIT licensed.
