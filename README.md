@@ -64,6 +64,16 @@ buffer_size = 8192;
 queue_size = 100;
 ```
 
+Examples:
+
+```
+fiche -d domain.com
+```
+
+```
+fiche -s 6 -p 6666
+```
+
 ### Basic arguments ###
 
 Most important is providing **basedir** and **domain**.
@@ -72,7 +82,7 @@ Basedir should be **absolute** path to directory where you would like to store t
 
 Domain should be provided in such format ```domain.com```.
 
-Slug size: ```yourserver.com/SLUG_OF_CHOSEN_LENGTH/```.
+Slug size: ```domain.com/SLUG_OF_CHOSEN_LENGTH/```.
 
 ### Parameters for advanced users ###
 
@@ -80,7 +90,7 @@ Slug size: ```yourserver.com/SLUG_OF_CHOSEN_LENGTH/```.
 - Queue size
 
 ## Running as service ##
-
+e
 You can run fiche as service, there is simple systemd example:
 
 ```
@@ -92,6 +102,12 @@ ExecStart=/usr/local/bin/fiche -d code.solusipse.net -o /home/www/code/
 
 [Install]
 WantedBy=multi-user.target
+```
+
+In service mode you have to set output directory with ```-d``` parameter, there's example:
+
+```
+fiche -o /home/www/code/
 ```
 
 ## Webserver ##
