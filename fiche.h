@@ -65,4 +65,10 @@ void parse_parameters(int argc, char **argv);
 
 struct sockaddr_in set_address(struct sockaddr_in serveraddr);
 
+struct thread_arguments
+{
+	int connection_socket;
+	struct sockaddr_in client_address;
+};
+
 #endif

@@ -49,14 +49,17 @@ int main(int argc, char **argv)
 
 void *thread_connection(void *args)
 {
-    char buffer[BUFSIZE];
-    int n, client = *(int *)args;
-    bzero(buffer, BUFSIZE);
+    int connection_socket = ((struct thread_arguments *) args ) -> connection_socket;
+    struct sockaddr_in client_address = ((struct thread_arguments *) args ) -> client_address;
 
-    int status = recv(client, buffer, BUFSIZE, 0);
+    int n;
+    char buffer[BUFSIZE];
+    bzero(buffer, BUFSIZE);
+    int status = recv(connection_socket, buffer, BUFSIZE, 0);
 
     if (status != -1)
     {
+        get_client_address(client_address);
         char slug[SLUG_SIZE];
         generate_url(buffer, slug);
 
@@ -64,17 +67,17 @@ void *thread_connection(void *args)
         strcpy(response, DOMAIN);
         strcat(response, slug);
         strcat(response, "/\n");
-        write(client, response, strlen(response));
+        write(connection_socket, response, strlen(response));
     }
     else
     {
+        get_client_address(client_address);
         printf("Invalid connection.\n");
-        write(client, "Use netcat.\n", 13);
+        write(connection_socket, "Use netcat.\n", 13);
     }
     
-    close(client);
+    close(connection_socket);
     pthread_exit(NULL);
-    return NULL;
 }
 
 void perform_connection(int listen_socket)
@@ -84,9 +87,9 @@ void perform_connection(int listen_socket)
     struct sockaddr_in client_address;
     
     int address_lenght = sizeof(client_address);
-    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, &address_lenght);
+    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_lenght);
 
-    struct timeval timeout;      
+    struct timeval timeout;
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 
@@ -95,9 +98,11 @@ void perform_connection(int listen_socket)
     if (setsockopt (connection_socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
         error();
 
-    get_client_address(client_address);
+    struct thread_arguments arguments;
+    arguments.connection_socket = connection_socket;
+    arguments.client_address = client_address;
 
-    if (pthread_create(&thread_id, NULL, &thread_connection, &connection_socket) != 0)
+    if (pthread_create(&thread_id, NULL, &thread_connection, &arguments) != 0)
         error();
     else
         pthread_detach(thread_id);
