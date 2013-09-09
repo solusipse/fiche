@@ -10,8 +10,9 @@ Live example: http://code.solusipse.net/
 -------------------------------------------------------------------------------
 
 usage: fiche [-bdpqs].
-             [-d host_domain.com] [-p port] [-s slug_size]
-             [-o output_directory] [-b buffer_size] [-q queue_size]
+             [-d domain] [-p port] [-s slug_size]
+             [-o output directory] [-b buffer_size]
+             [-l log file] [-q queue_size]
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -59,9 +60,10 @@ void *thread_connection(void *args)
 
     if (status != -1)
     {
-        get_client_address(client_address);
         char slug[SLUG_SIZE];
         generate_url(buffer, slug);
+
+        get_client_address(client_address, slug);
 
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         strcpy(response, DOMAIN);
@@ -71,7 +73,7 @@ void *thread_connection(void *args)
     }
     else
     {
-        get_client_address(client_address);
+        get_client_address(client_address, NULL);
         printf("Invalid connection.\n");
         write(connection_socket, "Use netcat.\n", 13);
     }
@@ -119,10 +121,8 @@ void display_date()
     printf("%s", asctime(timeinfo));
 }
 
-void get_client_address(struct sockaddr_in client_address)
+void get_client_address(struct sockaddr_in client_address, char *slug)
 {
-    display_line();
-
     struct hostent *hostp;
     char *hostaddrp;
 
@@ -134,6 +134,25 @@ void get_client_address(struct sockaddr_in client_address)
 
     display_date();
     printf("Client: %s (%s)\n", hostaddrp, hostp->h_name);
+
+    if (LOG != NULL)
+        save_log(slug, hostaddrp, hostp->h_name);
+}
+
+void save_log(char *slug, char *hostaddrp, char *h_name)
+{
+    char contents[256];
+    snprintf(contents, sizeof contents, "%s:%s:%s\n", slug, hostaddrp, h_name);
+
+    if (slug != NULL)
+        snprintf(contents, sizeof contents, "%s:%s:%s\n", slug, hostaddrp, h_name);
+    else
+        snprintf(contents, sizeof contents, "%s:%s:%s\n", "error", hostaddrp, h_name);
+
+    FILE *fp;
+    fp = fopen(LOG, "a");
+    fprintf(fp, "%s", contents);
+    fclose(fp);
 }
 
 int create_socket()
@@ -208,6 +227,8 @@ void save_to_file(char *slug, char *buffer)
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
+    display_line();
+
     printf("Saved to: %s\n", directory);
     free(directory);
 }
@@ -220,16 +241,16 @@ void set_basedir()
 
 void startup_message()
 {
-    printf("Fiche started listening on port %d.\n", PORT);
     printf("Domain name: %s\n", DOMAIN);
     printf("Saving files to: %s\n", BASEDIR);
+    printf("Fiche started listening on port %d.\n", PORT);
 }
 
 void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "p:b:q:s:d:o:")) != -1)
+    while ((c = getopt (argc, argv, "p:b:q:s:d:o:l:")) != -1)
         switch (c)
         {
             case 'd':
@@ -255,10 +276,15 @@ void parse_parameters(int argc, char **argv)
                 if((BASEDIR[strlen(BASEDIR) - 1]) != '/')
                     strcat(BASEDIR, "/");
                 break;
+            case 'l':
+                LOG = optarg;
+                printf("Log file: %s\n", LOG);
+                break;
             default:
                 printf("usage: fiche [-bdpqs].\n");
-                printf("             [-d host_domain.com] [-p port] [-s slug_size]\n");
-                printf("             [-o output_directory] [-b buffer_size] [-q queue_size]\n");
+                printf("                     [-d domain] [-p port] [-s slug_size]\n");
+                printf("                     [-o output directory] [-b buffer_size]\n");
+                printf("                     [-l log file] [-q queue_size]\n");
                 exit(1);
         }
 }
