@@ -11,8 +11,8 @@ Live example: http://code.solusipse.net/
 
 usage: fiche [-bdpqs].
              [-d domain] [-p port] [-s slug_size]
-             [-o output directory] [-b buffer_size]
-             [-l log file] [-q queue_size]
+             [-o output directory] [-B buffer_size]
+             [-l log file] [-q queue_size] [-b banlist]
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -53,31 +53,41 @@ void *thread_connection(void *args)
     int connection_socket = ((struct thread_arguments *) args ) -> connection_socket;
     struct sockaddr_in client_address = ((struct thread_arguments *) args ) -> client_address;
 
+    struct client_data data = get_client_address(client_address);
+
     int n;
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
     int status = recv(connection_socket, buffer, BUFSIZE, 0);
 
+    if (BANLIST != NULL)
+        if (check_banlist(data.ip_address) != NULL)
+        {
+            printf("Rejected connection from banned user.\n");
+            display_line();
+            save_log(NULL, data.ip_address, data.hostname);
+            write(connection_socket, "You are banned!\n", 17);
+            close(connection_socket);
+            pthread_exit(NULL);
+        }
+
     if (status != -1)
     {
         char slug[SLUG_SIZE];
         generate_url(buffer, slug);
-
-        get_client_address(client_address, slug);
-
+        save_log(slug, data.ip_address, data.hostname);
         char response[strlen(slug) + strlen(DOMAIN) + 2];
-        strcpy(response, DOMAIN);
-        strcat(response, slug);
-        strcat(response, "/\n");
+        snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
         write(connection_socket, response, strlen(response));
     }
     else
     {
-        get_client_address(client_address, NULL);
         printf("Invalid connection.\n");
+        display_line();
+        save_log(NULL, data.ip_address, data.hostname);
         write(connection_socket, "Use netcat.\n", 13);
     }
-    
+
     close(connection_socket);
     pthread_exit(NULL);
 }
@@ -108,22 +118,28 @@ void perform_connection(int listen_socket)
         error();
     else
         pthread_detach(thread_id);
-
 }
 
 void display_date()
+{
+    printf("%s", get_date());
+}
+
+char *get_date()
 {
     time_t rawtime;
     struct tm *timeinfo;
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
-    printf("%s", asctime(timeinfo));
+
+    return asctime(timeinfo);
 }
 
-void get_client_address(struct sockaddr_in client_address, char *slug)
+struct client_data get_client_address(struct sockaddr_in client_address)
 {
     struct hostent *hostp;
+    struct client_data data;
     char *hostaddrp;
 
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
@@ -135,24 +151,52 @@ void get_client_address(struct sockaddr_in client_address, char *slug)
     display_date();
     printf("Client: %s (%s)\n", hostaddrp, hostp->h_name);
 
-    if (LOG != NULL)
-        save_log(slug, hostaddrp, hostp->h_name);
+    data.ip_address = hostaddrp;
+    data.hostname = hostp->h_name;
+
+    return data;
 }
 
 void save_log(char *slug, char *hostaddrp, char *h_name)
 {
-    char contents[256];
-    snprintf(contents, sizeof contents, "%s:%s:%s\n", slug, hostaddrp, h_name);
+    if (LOG != NULL)
+    {
+        char contents[256];
 
-    if (slug != NULL)
-        snprintf(contents, sizeof contents, "%s:%s:%s\n", slug, hostaddrp, h_name);
-    else
-        snprintf(contents, sizeof contents, "%s:%s:%s\n", "error", hostaddrp, h_name);
+        if (slug != NULL)
+            snprintf(contents, sizeof contents, "\n%s%s|%s|%s%s", get_date(), slug, hostaddrp, h_name, return_line());
+        else
+            snprintf(contents, sizeof contents, "\n%s%s|%s|%s%s", get_date(), "rejected", hostaddrp, h_name, return_line());
 
-    FILE *fp;
-    fp = fopen(LOG, "a");
-    fprintf(fp, "%s", contents);
+        FILE *fp;
+        fp = fopen(LOG, "a");
+        fprintf(fp, "%s", contents);
+        fclose(fp);
+    }
+}
+
+char *check_banlist(char *ip_address)
+{
+    load_banlist(BANFILE);
+    return strstr(BANLIST, ip_address);
+}
+
+void load_banlist(char *file_path)
+{
+    FILE *fp = fopen(file_path, "r");
+    fseek(fp, 0, SEEK_END);
+    long fsize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    char *buffer = malloc(fsize + 1);
+
+    fread(buffer, fsize, 1, fp);
     fclose(fp);
+
+    buffer[fsize] = 0;
+    BANLIST = buffer;
+
+    free(buffer);
 }
 
 int create_socket()
@@ -227,9 +271,8 @@ void save_to_file(char *slug, char *buffer)
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
-    display_line();
-
     printf("Saved to: %s\n", directory);
+    display_line();
     free(directory);
 }
 
@@ -241,16 +284,18 @@ void set_basedir()
 
 void startup_message()
 {
+    display_line();
     printf("Domain name: %s\n", DOMAIN);
     printf("Saving files to: %s\n", BASEDIR);
     printf("Fiche started listening on port %d.\n", PORT);
+    display_line();
 }
 
 void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "p:b:q:s:d:o:l:")) != -1)
+    while ((c = getopt (argc, argv, "p:b:q:s:d:o:l:B:")) != -1)
         switch (c)
         {
             case 'd':
@@ -259,9 +304,13 @@ void parse_parameters(int argc, char **argv)
             case 'p':
                 PORT = atoi(optarg);
                 break;
-            case 'b':
+            case 'B':
                 BUFSIZE = atoi(optarg);
                 printf("Buffer size set to: %d.\n", BUFSIZE);
+                break;
+            case 'b':
+                BANFILE = optarg;
+                load_banlist(BANFILE);
                 break;
             case 'q':
                 QUEUE_SIZE = atoi(optarg);
@@ -283,8 +332,8 @@ void parse_parameters(int argc, char **argv)
             default:
                 printf("usage: fiche [-bdpqs].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
-                printf("                     [-o output directory] [-b buffer_size]\n");
-                printf("                     [-l log file] [-q queue_size]\n");
+                printf("                     [-o output directory] [-B buffer_size]\n");
+                printf("                     [-l log file] [-q queue_size] [-b banlist]\n");
                 exit(1);
         }
 }
