@@ -46,7 +46,7 @@ char *BANLIST;
 char *BANFILE;
 int PORT = 9999;
 int SLUG_SIZE = 4;
-int BUFSIZE = 8192;
+int BUFSIZE = 32768;
 int QUEUE_SIZE = 100;
 char DOMAIN[128] = "http://localhost/";
 
