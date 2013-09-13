@@ -10,9 +10,9 @@ Live example: http://code.solusipse.net/
 -------------------------------------------------------------------------------
 
 usage: fiche [-bdpqs].
-             [-d domain] [-p port] [-s slug_size]
-             [-o output directory] [-B buffer_size]
-             [-l log file] [-q queue_size]
+             [-d domain] [-p port] [-s slug size]
+             [-o output directory] [-B buffer size] [-u user name]
+             [-l log file] [-b banlist] [-w whitelist]
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -27,6 +27,7 @@ $ cat fiche.c | nc localhost 9999
 #ifndef FICHE_H
 #define FICHE_H
 
+#include <pwd.h>
 #include <time.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -40,14 +41,17 @@ $ cat fiche.c | nc localhost 9999
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+int UID = -1;
+int GID = -1;
 char *LOG;
 char *BASEDIR;
 char *BANLIST;
 char *BANFILE;
+char *WHITELIST;
 int PORT = 9999;
 int SLUG_SIZE = 4;
 int BUFSIZE = 32768;
-int QUEUE_SIZE = 100;
+int QUEUE_SIZE = 500;
 char DOMAIN[128] = "http://localhost/";
 
 int time_seed;
@@ -68,6 +72,8 @@ void set_basedir();
 void load_banlist();
 void parse_parameters(int argc, char **argv);
 void save_log(char *slug, char *hostaddrp, char *h_name);
+void change_owner(char *directory);
+void set_uid_gid();
 
 char *return_line(){return("\n====================================");}
 char *check_banlist(char *ip_address);

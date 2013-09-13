@@ -10,9 +10,9 @@ Live example: http://code.solusipse.net/
 -------------------------------------------------------------------------------
 
 usage: fiche [-bdpqs].
-             [-d domain] [-p port] [-s slug_size]
-             [-o output directory] [-B buffer_size]
-             [-l log file] [-q queue_size] [-b banlist]
+             [-d domain] [-p port] [-s slug size]
+             [-o output directory] [-B buffer size] [-u user name]
+             [-l log file] [-b banlist] [-w whitelist]
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -254,6 +254,8 @@ int create_directory(char *slug)
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
     int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
 
+    change_owner(directory);
+
     free(directory);
 
     return result;
@@ -271,9 +273,27 @@ void save_to_file(char *slug, char *buffer)
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
+    change_owner(directory);
+
     printf("Saved to: %s\n", directory);
     display_line();
     free(directory);
+}
+
+void change_owner(char *directory)
+{
+    if ((UID != -1)&&(GID != -1))
+    chown(directory, UID, GID);
+}
+
+void set_uid_gid(char *username)
+{
+    struct passwd *userdata = getpwnam(username);
+    if (userdata == NULL)
+        error();
+
+    UID = userdata->pw_uid;
+    GID = userdata->pw_gid;
 }
 
 void set_basedir()
@@ -295,7 +315,7 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "p:b:q:s:d:o:l:B:")) != -1)
+    while ((c = getopt (argc, argv, "p:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
             case 'd':
@@ -312,10 +332,6 @@ void parse_parameters(int argc, char **argv)
                 BANFILE = optarg;
                 load_banlist(BANFILE);
                 break;
-            case 'q':
-                QUEUE_SIZE = atoi(optarg);
-                printf("Queue size set to: %d.\n", QUEUE_SIZE);
-                break;
             case 's':
                 SLUG_SIZE = atoi(optarg);
                 printf("Slug size set to: %d.\n", SLUG_SIZE);
@@ -329,11 +345,17 @@ void parse_parameters(int argc, char **argv)
                 LOG = optarg;
                 printf("Log file: %s\n", LOG);
                 break;
+            case 'u':
+                set_uid_gid(optarg);
+                break;
+            case 'w':
+                WHITELIST = optarg;
+                break;
             default:
                 printf("usage: fiche [-bdpqs].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
-                printf("                     [-o output directory] [-B buffer_size]\n");
-                printf("                     [-l log file] [-q queue_size] [-b banlist]\n");
+                printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
+                printf("                     [-l log file] [-b banlist] [-w whitelist]\n");
                 exit(1);
         }
 }
