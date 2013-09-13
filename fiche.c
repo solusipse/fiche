@@ -261,10 +261,10 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.html"));
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt"));
     strcpy(directory, BASEDIR);
     strcat(directory, slug);
-    strcat(directory, "/index.html");
+    strcat(directory, "/index.txt");
 
     FILE *fp;
     fp = fopen(directory, "w");
