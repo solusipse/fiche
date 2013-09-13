@@ -47,6 +47,7 @@ char *LOG;
 char *BASEDIR;
 char *BANLIST;
 char *BANFILE;
+char *WHITEFILE;
 char *WHITELIST;
 int PORT = 9999;
 int SLUG_SIZE = 4;
@@ -69,7 +70,7 @@ void generate_url(char *buffer, char *slug);
 void save_to_file(char *buffer, char *slug);
 void startup_message();
 void set_basedir();
-void load_banlist();
+void load_list(char *file_path, int type);
 void parse_parameters(int argc, char **argv);
 void save_log(char *slug, char *hostaddrp, char *h_name);
 void change_owner(char *directory);
@@ -77,6 +78,7 @@ void set_uid_gid();
 
 char *return_line(){return("\n====================================");}
 char *check_banlist(char *ip_address);
+char *check_whitelist(char *ip_address);
 char *get_date();
 
 struct sockaddr_in set_address(struct sockaddr_in serveraddr);

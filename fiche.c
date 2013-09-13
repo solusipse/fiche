@@ -60,7 +60,18 @@ void *thread_connection(void *args)
     bzero(buffer, BUFSIZE);
     int status = recv(connection_socket, buffer, BUFSIZE, MSG_WAITALL);
 
-    if (BANLIST != NULL)
+    if (WHITELIST != NULL)
+        if (check_whitelist(data.ip_address) == NULL)
+        {
+            printf("Rejected connection from unknown user.\n");
+            display_line();
+            save_log(NULL, data.ip_address, data.hostname);
+            write(connection_socket, "You are not whitelisted!\n", 17);
+            close(connection_socket);
+            pthread_exit(NULL);
+        }
+
+    if ((BANLIST != NULL))
         if (check_banlist(data.ip_address) != NULL)
         {
             printf("Rejected connection from banned user.\n");
@@ -177,11 +188,17 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
 
 char *check_banlist(char *ip_address)
 {
-    load_banlist(BANFILE);
+    load_list(BANFILE, 0);
     return strstr(BANLIST, ip_address);
 }
 
-void load_banlist(char *file_path)
+char *check_whitelist(char *ip_address)
+{
+    load_list(WHITEFILE, 1);
+    return strstr(WHITELIST, ip_address);
+}
+
+void load_list(char *file_path, int type)
 {
     FILE *fp = fopen(file_path, "r");
     fseek(fp, 0, SEEK_END);
@@ -189,12 +206,15 @@ void load_banlist(char *file_path)
     fseek(fp, 0, SEEK_SET);
 
     char *buffer = malloc(fsize + 1);
-
     fread(buffer, fsize, 1, fp);
     fclose(fp);
 
     buffer[fsize] = 0;
-    BANLIST = buffer;
+
+    if (type == 0)
+        BANLIST = buffer;
+    else
+        WHITELIST = buffer;
 
     free(buffer);
 }
@@ -330,7 +350,7 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'b':
                 BANFILE = optarg;
-                load_banlist(BANFILE);
+                load_list(BANFILE, 0);
                 break;
             case 's':
                 SLUG_SIZE = atoi(optarg);
@@ -349,7 +369,8 @@ void parse_parameters(int argc, char **argv)
                 set_uid_gid(optarg);
                 break;
             case 'w':
-                WHITELIST = optarg;
+                WHITEFILE = optarg;
+                load_list(WHITEFILE, 1);
                 break;
             default:
                 printf("usage: fiche [-bdpqs].\n");
