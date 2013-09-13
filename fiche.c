@@ -9,7 +9,7 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-bdpqs].
+usage: fiche [-pbsdolBuw].
              [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -373,7 +373,7 @@ void parse_parameters(int argc, char **argv)
                 load_list(WHITEFILE, 1);
                 break;
             default:
-                printf("usage: fiche [-bdpqs].\n");
+                printf("usage: fiche [-pbsdolBuw].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
                 printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
                 printf("                     [-l log file] [-b banlist] [-w whitelist]\n");
