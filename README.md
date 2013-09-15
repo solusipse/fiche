@@ -76,11 +76,11 @@ Basedir should be **absolute** path to directory where you would like to store t
 
 
 ```
-fiche -b /absolute/path/to/directory/
+fiche -o /absolute/path/to/directory/
 ```
 
 ```
-fiche -b /home/www/code/
+fiche -o /home/www/code/
 ```
 
 -----------------
