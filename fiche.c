@@ -113,7 +113,7 @@ void perform_connection(int listen_socket)
     int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_lenght);
 
     struct timeval timeout;
-    timeout.tv_sec = 120;
+    timeout.tv_sec = 5;
     timeout.tv_usec = 0;
 
     if (setsockopt (connection_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
