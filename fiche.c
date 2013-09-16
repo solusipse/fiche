@@ -117,16 +117,16 @@ void perform_connection(int listen_socket)
     timeout.tv_usec = 0;
 
     if (setsockopt (connection_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        error();
+        error("ERROR while setting setsockopt timeout");
     if (setsockopt (connection_socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        error();
+        error("ERROR while setting setsockopt timeout");
 
     struct thread_arguments arguments;
     arguments.connection_socket = connection_socket;
     arguments.client_address = client_address;
 
     if (pthread_create(&thread_id, NULL, &thread_connection, &arguments) != 0)
-        error();
+        error("ERROR on thread creation");
     else
         pthread_detach(thread_id);
 }
@@ -154,10 +154,12 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     char *hostaddrp;
 
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
-    if (hostp == NULL) error();
+    if (hostp == NULL)
+        nerror("ERROR: Couldn't obtain client's address");
 
     hostaddrp = inet_ntoa(client_address.sin_addr);
-    if (hostaddrp == NULL) error();
+    if (hostaddrp == NULL)
+        nerror("ERROR: Couldn't obtain client's address");
 
     display_date();
     printf("Client: %s (%s)\n", hostaddrp, hostp->h_name);
@@ -223,7 +225,7 @@ int create_socket()
 {
     int lsocket = socket(AF_INET, SOCK_STREAM, 0);
     if (lsocket < 0)
-        error();
+        error("ERROR: Couldn't open socket");
     else return lsocket;
 }
 
@@ -239,9 +241,9 @@ struct sockaddr_in set_address(struct sockaddr_in server_address)
 void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 {
     if (bind(listen_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) 
-        error();
+        error("ERROR while binding to port");
     if (listen(listen_socket, QUEUE_SIZE) < 0)
-        error();
+        error("ERROR while starting listening");
 }
 
 void generate_url(char *buffer, char *slug)
@@ -310,7 +312,7 @@ void set_uid_gid(char *username)
 {
     struct passwd *userdata = getpwnam(username);
     if (userdata == NULL)
-        error();
+        error("Provided user doesn't exist");
 
     UID = userdata->pw_uid;
     GID = userdata->pw_gid;

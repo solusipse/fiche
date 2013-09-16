@@ -63,7 +63,8 @@ int create_directory(char *slug);
 
 void bind_to_port(int listen_socket, struct sockaddr_in serveraddr);
 void display_line(){printf("====================================\n");}
-void error(){perror("ERROR"); exit(1);}
+void error(char *error_code){perror(error_code); exit(1);}
+void nerror(char *error_code){perror(error_code);}
 void display_date();
 void perform_connection(int listen_socket);
 void generate_url(char *buffer, char *slug);
