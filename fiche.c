@@ -156,7 +156,8 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
     {
-        nerror("ERROR: Couldn't obtain client's hostname");
+        /*nerror("ERROR: Couldn't obtain client's hostname");*/
+        printf("ERROR: Couldn't obtain client's hostname");
         data.hostname = "error";
     }
     else
