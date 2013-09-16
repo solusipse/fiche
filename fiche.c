@@ -155,17 +155,26 @@ struct client_data get_client_address(struct sockaddr_in client_address)
 
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
+    {
         nerror("ERROR: Couldn't obtain client's address");
+        data.hostname = "error";
+    }
+    else
+        data.hostname = hostp->h_name;
 
     hostaddrp = inet_ntoa(client_address.sin_addr);
     if (hostaddrp == NULL)
+    {
         nerror("ERROR: Couldn't obtain client's address");
+        data.ip_address = "error";
+    }
+    else
+        data.ip_address = hostaddrp;
 
     display_date();
-    printf("Client: %s (%s)\n", hostaddrp, hostp->h_name);
+    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
 
-    data.ip_address = hostaddrp;
-    data.hostname = hostp->h_name;
+    
 
     return data;
 }
