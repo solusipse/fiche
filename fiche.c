@@ -84,8 +84,8 @@ void *thread_connection(void *args)
 
     if (status != -1)
     {
-        char slug[SLUG_SIZE];
-        generate_url(buffer, slug);
+        char slug[SLUG_SIZE+1];
+        generate_url(buffer, slug, SLUG_SIZE+1);
         save_log(slug, data.ip_address, data.hostname);
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
@@ -256,10 +256,10 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
         error("ERROR while starting listening");
 }
 
-void generate_url(char *buffer, char *slug)
+void generate_url(char *buffer, char *slug, size_t slug_length)
 {
     int i;
-    memset(slug, '\0', sizeof(slug));
+    memset(slug, '\0', slug_length);
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
     {
@@ -278,7 +278,7 @@ void generate_url(char *buffer, char *slug)
 
 int create_directory(char *slug)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug));
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 1);
 
     strcpy(directory, BASEDIR);
     strcat(directory, slug);
@@ -295,7 +295,7 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt"));
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 1);
     strcpy(directory, BASEDIR);
     strcat(directory, slug);
     strcat(directory, "/index.txt");
