@@ -67,7 +67,7 @@ void error(char *error_code){perror(error_code); exit(1);}
 void nerror(char *error_code){perror(error_code);}
 void display_date();
 void perform_connection(int listen_socket);
-void generate_url(char *buffer, char *slug);
+void generate_url(char *buffer, char *slug, size_t slug_length);
 void save_to_file(char *buffer, char *slug);
 void startup_message();
 void set_basedir();
