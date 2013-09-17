@@ -85,7 +85,7 @@ void *thread_connection(void *args)
     if (status != -1)
     {
         char slug[SLUG_SIZE+8];
-        generate_url(buffer, slug, SLUG_SIZE+1);
+        generate_url(buffer, slug, SLUG_SIZE+8);
         save_log(slug, data.ip_address, data.hostname);
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
