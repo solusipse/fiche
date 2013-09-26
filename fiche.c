@@ -66,12 +66,12 @@ void *thread_connection(void *args)
             printf("Rejected connection from unknown user.\n");
             display_line();
             save_log(NULL, data.ip_address, data.hostname);
-            write(connection_socket, "You are not whitelisted!\n", 17);
+            write(connection_socket, "You are not whitelisted!\n", 26);
             close(connection_socket);
             pthread_exit(NULL);
         }
 
-    if ((BANLIST != NULL))
+    if (BANLIST != NULL)
         if (check_banlist(data.ip_address) != NULL)
         {
             printf("Rejected connection from banned user.\n");
@@ -81,6 +81,16 @@ void *thread_connection(void *args)
             close(connection_socket);
             pthread_exit(NULL);
         }
+
+    if (check_protocol(buffer) == 1)
+    {
+        printf("Rejected due to wrong protocol.\n");
+        display_line();
+        save_log(NULL, data.ip_address, data.hostname);
+        write(connection_socket, "Use netcat!", 11);
+        close(connection_socket);
+        pthread_exit(NULL);
+    }
 
     if (status != -1)
     {
@@ -325,6 +335,16 @@ void set_uid_gid(char *username)
 
     UID = userdata->pw_uid;
     GID = userdata->pw_gid;
+}
+
+int check_protocol(char *buffer)
+{
+    if (strlen(buffer) < 1)
+        return 1;
+    if ((strncmp(buffer, "GET", 3) == 0)||(strncmp(buffer, "POST", 4) == 0))
+        if (strstr(buffer, "HTTP/1."))
+            return 1;
+    return 0;
 }
 
 void set_basedir()
