@@ -58,6 +58,18 @@ char DOMAIN[128] = "http://localhost/";
 int time_seed;
 const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
 
+struct thread_arguments
+{
+	int connection_socket;
+	struct sockaddr_in client_address;
+};
+
+struct client_data
+{
+	char *ip_address;
+	char *hostname;
+};
+
 int create_socket();
 int create_directory(char *slug);
 int check_protocol(char *buffer);
@@ -67,8 +79,9 @@ void display_line(){printf("====================================\n");}
 void error(char *error_code){perror(error_code); exit(1);}
 void display_date();
 void perform_connection(int listen_socket);
-void generate_url(char *buffer, char *slug, size_t slug_length);
-void save_to_file(char *buffer, char *slug);
+void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data);
+void save_to_file(char *buffer, char *slug, struct client_data data);
+void display_info(struct client_data data, char *slug, char *message);
 void startup_message();
 void set_basedir();
 void load_list(char *file_path, int type);
@@ -84,17 +97,5 @@ char *get_date();
 
 struct sockaddr_in set_address(struct sockaddr_in serveraddr);
 struct client_data get_client_address(struct sockaddr_in client_address);
-
-struct thread_arguments
-{
-	int connection_socket;
-	struct sockaddr_in client_address;
-};
-
-struct client_data
-{
-	char *ip_address;
-	char *hostname;
-};
 
 #endif

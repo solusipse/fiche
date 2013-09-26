@@ -63,8 +63,7 @@ void *thread_connection(void *args)
     if (WHITELIST != NULL)
         if (check_whitelist(data.ip_address) == NULL)
         {
-            printf("Rejected connection from unknown user.\n");
-            display_line();
+            display_info(data, NULL, "Rejected connection from unknown user.");
             save_log(NULL, data.ip_address, data.hostname);
             write(connection_socket, "You are not whitelisted!\n", 26);
             close(connection_socket);
@@ -74,8 +73,7 @@ void *thread_connection(void *args)
     if (BANLIST != NULL)
         if (check_banlist(data.ip_address) != NULL)
         {
-            printf("Rejected connection from banned user.\n");
-            display_line();
+            display_info(data, NULL, "Rejected connection from banned user.");
             save_log(NULL, data.ip_address, data.hostname);
             write(connection_socket, "You are banned!\n", 17);
             close(connection_socket);
@@ -83,19 +81,12 @@ void *thread_connection(void *args)
         }
 
     if (check_protocol(buffer) == 1)
-    {
-        printf("Rejected due to wrong protocol.\n");
-        display_line();
-        save_log(NULL, data.ip_address, data.hostname);
-        write(connection_socket, "Use netcat!", 11);
-        close(connection_socket);
-        pthread_exit(NULL);
-    }
+        status = -1;
 
     if (status != -1)
     {
         char slug[SLUG_SIZE+8];
-        generate_url(buffer, slug, SLUG_SIZE+8);
+        generate_url(buffer, slug, SLUG_SIZE+8, data);
         save_log(slug, data.ip_address, data.hostname);
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
@@ -103,10 +94,9 @@ void *thread_connection(void *args)
     }
     else
     {
-        printf("Invalid connection.\n");
-        display_line();
+        display_info(data, NULL, "Invalid connection.");
         save_log(NULL, data.ip_address, data.hostname);
-        write(connection_socket, "Use netcat.\n", 13);
+        write(connection_socket, "Use netcat.\n", 12);
     }
 
     close(connection_socket);
@@ -181,11 +171,6 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     else
         data.ip_address = hostaddrp;
 
-    display_date();
-    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
-
-    
-
     return data;
 }
 
@@ -205,6 +190,16 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
         fprintf(fp, "%s", contents);
         fclose(fp);
     }
+}
+
+void display_info(struct client_data data, char *slug, char *message)
+{
+    if (slug == NULL)
+        printf("%s\n", message);
+    else printf("Saved to: %s\n", slug);
+    display_date();
+    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
+    display_line();
 }
 
 char *check_banlist(char *ip_address)
@@ -265,7 +260,7 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
         error("ERROR while starting listening");
 }
 
-void generate_url(char *buffer, char *slug, size_t slug_length)
+void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data)
 {
     int i;
     memset(slug, '\0', slug_length);
@@ -282,7 +277,7 @@ void generate_url(char *buffer, char *slug, size_t slug_length)
         slug[strlen(slug)] = symbols[symbol_id];
     }
 
-    save_to_file(slug, buffer);
+    save_to_file(slug, buffer, data);
 }
 
 int create_directory(char *slug)
@@ -302,7 +297,7 @@ int create_directory(char *slug)
     return result;
 }
 
-void save_to_file(char *slug, char *buffer)
+void save_to_file(char *slug, char *buffer, struct client_data data)
 {
     char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 1);
     strcpy(directory, BASEDIR);
@@ -315,9 +310,8 @@ void save_to_file(char *slug, char *buffer)
     fclose(fp);
 
     change_owner(directory);
+    display_info(data, directory, "");
 
-    printf("Saved to: %s\n", directory);
-    display_line();
     free(directory);
 }
 
@@ -339,7 +333,7 @@ void set_uid_gid(char *username)
 
 int check_protocol(char *buffer)
 {
-    if (strlen(buffer) < 1)
+    if (strlen(buffer) < 3)
         return 1;
     if ((strncmp(buffer, "GET", 3) == 0)||(strncmp(buffer, "POST", 4) == 0))
         if (strstr(buffer, "HTTP/1."))
