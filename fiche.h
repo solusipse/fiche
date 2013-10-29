@@ -55,7 +55,7 @@ int BUFSIZE = 32768;
 int QUEUE_SIZE = 500;
 char DOMAIN[128] = "http://localhost/";
 
-int time_seed;
+unsigned int time_seed;
 const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 struct thread_arguments

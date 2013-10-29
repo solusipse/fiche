@@ -239,7 +239,10 @@ int create_socket()
 {
     int lsocket = socket(AF_INET, SOCK_STREAM, 0);
     if (lsocket < 0)
+    {
         error("ERROR: Couldn't open socket");
+        return 0;
+    }
     else return lsocket;
 }
 
