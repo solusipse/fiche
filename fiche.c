@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     
     startup_message();
 
-    int listen_socket, address_lenght, optval = 1;
+    int listen_socket, optval = 1;
     struct sockaddr_in server_address;
 
     listen_socket = create_socket();
@@ -55,7 +55,6 @@ void *thread_connection(void *args)
 
     struct client_data data = get_client_address(client_address);
 
-    int n;
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
     int status = recv(connection_socket, buffer, BUFSIZE, MSG_WAITALL);
@@ -105,7 +104,6 @@ void *thread_connection(void *args)
 
 void perform_connection(int listen_socket)
 {
-    void *status = 0;
     pthread_t thread_id;
     struct sockaddr_in client_address;
     
