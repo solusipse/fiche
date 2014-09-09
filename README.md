@@ -1,4 +1,4 @@
-fiche
+fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)](https://travis-ci.org/solusipse/fiche)
 =====
 
 Command line pastebin for sharing terminal output.
