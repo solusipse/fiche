@@ -131,18 +131,21 @@ void perform_connection(int listen_socket)
 
 void display_date()
 {
-    printf("%s", get_date());
+    printf("%s\n", get_date());
 }
 
 char *get_date()
 {
     time_t rawtime;
     struct tm *timeinfo;
+    char *timechar;
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
+    timechar = asctime(timeinfo);
+    timechar[strlen(timechar)-1] = 0;
 
-    return asctime(timeinfo);
+    return timechar;
 }
 
 struct client_data get_client_address(struct sockaddr_in client_address)
@@ -155,7 +158,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     if (hostp == NULL)
     {
         printf("ERROR: Couldn't obtain client's hostname\n");
-        data.hostname = "error";
+        data.hostname = "n/a";
     }
     else
         data.hostname = hostp->h_name;
@@ -164,7 +167,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     if (hostaddrp == NULL)
     {
         printf("ERROR: Couldn't obtain client's address\n");
-        data.ip_address = "error";
+        data.ip_address = "n/a";
     }
     else
         data.ip_address = hostaddrp;
@@ -179,9 +182,9 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
         char contents[256];
 
         if (slug != NULL)
-            snprintf(contents, sizeof contents, "\n%s%s|%s|%s%s", get_date(), slug, hostaddrp, h_name, return_line());
+            snprintf(contents, sizeof contents, "%s -- %s -- %s (%s)\n", slug, get_date(), hostaddrp, h_name);
         else
-            snprintf(contents, sizeof contents, "\n%s%s|%s|%s%s", get_date(), "rejected", hostaddrp, h_name, return_line());
+            snprintf(contents, sizeof contents, "%s -- %s -- %s (%s)\n", "rej", get_date(), hostaddrp, h_name);
 
         FILE *fp;
         fp = fopen(LOG, "a");
