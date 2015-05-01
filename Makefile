@@ -4,12 +4,15 @@
 # solusipse.net
 # -----------------------------------
 
-CC=gcc
-CFLAGS=-pthread -O2
-prefix=/usr/local
+CFLAGS+=-pthread -O2
 
 all: fiche.c
 	$(CC) -o fiche $(CFLAGS) fiche.c
 
 install: fiche
-	install -m 0755 fiche $(prefix)/bin
+	install -m 0755 fiche ${PREFIX}/bin
+
+clean:
+	rm -f fiche
+
+.PHONY: clean
