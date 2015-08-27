@@ -50,13 +50,13 @@ char *BANFILE;
 char *WHITEFILE;
 char *WHITELIST;
 int PORT = 9999;
-int SLUG_SIZE = 4;
+int SLUG_SIZE = 8;
 int BUFSIZE = 32768;
 int QUEUE_SIZE = 500;
 char DOMAIN[128] = "http://localhost/";
 
 unsigned int time_seed;
-const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
+const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 struct thread_arguments
 {
