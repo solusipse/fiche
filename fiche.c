@@ -57,7 +57,7 @@ void *thread_connection(void *args)
 
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
-    int status = recv(connection_socket, buffer, BUFSIZE, MSG_WAITALL);
+    int status = recv(connection_socket, buffer, BUFSIZE, MSG_DONTWAIT);
 
     if (WHITELIST != NULL)
         if (check_whitelist(data.ip_address) == NULL)
