@@ -286,9 +286,10 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
 int create_directory(char *slug)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 1);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 2);
 
     strcpy(directory, BASEDIR);
+    strcat(directory, "/");
     strcat(directory, slug);
 
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
@@ -303,8 +304,9 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer, struct client_data data)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 1);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 2);
     strcpy(directory, BASEDIR);
+    strcat(directory, "/");
     strcat(directory, slug);
     strcat(directory, "/index.txt");
 
@@ -348,7 +350,7 @@ int check_protocol(char *buffer)
 void set_basedir()
 {
     BASEDIR = getenv("HOME");
-    strcat(BASEDIR, "/code/");
+    strcat(BASEDIR, "/code");
 }
 
 void startup_message()
@@ -387,8 +389,6 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'o':
                 BASEDIR = optarg;
-                if((BASEDIR[strlen(BASEDIR) - 1]) != '/')
-                    strcat(BASEDIR, "/");
                 break;
             case 'l':
                 LOG = optarg;
