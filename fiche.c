@@ -107,8 +107,8 @@ void perform_connection(int listen_socket)
     pthread_t thread_id;
     struct sockaddr_in client_address;
     
-    int address_lenght = sizeof(client_address);
-    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_lenght);
+    int address_length = sizeof(client_address);
+    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
 
     struct timeval timeout;
     timeout.tv_sec = 5;
