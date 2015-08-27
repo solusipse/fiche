@@ -288,9 +288,7 @@ int create_directory(char *slug)
 {
     char *directory = malloc(strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1);
 
-    strcpy(directory, BASEDIR);
-    strcat(directory, "/");
-    strcat(directory, slug);
+    snprintf(directory, strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1, "%s%s%s", BASEDIR, "/", slug);
 
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
     int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
@@ -304,11 +302,9 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer, struct client_data data)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + sizeof(char) + 1 );
-    strcpy(directory, BASEDIR);
-    strcat(directory, "/");
-    strcat(directory, slug);
-    strcat(directory, "/index.txt");
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1 );
+
+    snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
 
     FILE *fp;
     fp = fopen(directory, "w");
@@ -350,7 +346,7 @@ int check_protocol(char *buffer)
 void set_basedir()
 {
     BASEDIR = getenv("HOME");
-    strcat(BASEDIR, "/code");
+    strncat(BASEDIR, "/code", 5 * sizeof(char));
 }
 
 void startup_message()
