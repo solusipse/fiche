@@ -286,7 +286,7 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
 int create_directory(char *slug)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 2);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1);
 
     strcpy(directory, BASEDIR);
     strcat(directory, "/");
@@ -304,7 +304,7 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer, struct client_data data)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 2);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + sizeof(char) + 1 );
     strcpy(directory, BASEDIR);
     strcat(directory, "/");
     strcat(directory, slug);
