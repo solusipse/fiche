@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-pbsdolBuw].
-             [-d domain] [-p port] [-s slug size]
+usage: fiche [-epbsdolBuw].
+             [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-e option is for using an extended character set for the URL
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -50,13 +52,13 @@ char *BANFILE;
 char *WHITEFILE;
 char *WHITELIST;
 int PORT = 9999;
-int SLUG_SIZE = 8;
+int SLUG_SIZE = 4;
 int BUFSIZE = 32768;
 int QUEUE_SIZE = 500;
 char DOMAIN[128] = "http://localhost/";
+char symbols[67] = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 unsigned int time_seed;
-const char *symbols = "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 struct thread_arguments
 {

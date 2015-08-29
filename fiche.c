@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-pbsdolBuw].
-             [-d domain] [-p port] [-s slug size]
+usage: fiche [-epbsdolBuw].
+             [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-e option is for using an extended character set for the URL
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -371,9 +373,12 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "p:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "ep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
+            case 'e':
+                snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                break;
             case 'd':
                 snprintf(DOMAIN, sizeof DOMAIN, "%s%s%s", "http://", optarg, "/");
                 break;
