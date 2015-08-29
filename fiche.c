@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-pbsdolBuw].
-             [-d domain] [-p port] [-s slug size]
+usage: fiche [-epbsdolBuw].
+             [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-e option is for using an extended character set for the URL
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -24,6 +26,7 @@ $ cat fiche.c | nc localhost 9999
 -------------------------------------------------------------------------------
 */
 
+#include <sys/param.h>
 #include "fiche.h"
 
 int main(int argc, char **argv)
@@ -57,7 +60,7 @@ void *thread_connection(void *args)
 
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
-    int status = recv(connection_socket, buffer, BUFSIZE, MSG_WAITALL);
+    int status = recv(connection_socket, buffer, BUFSIZE, MSG_DONTWAIT);
 
     if (WHITELIST != NULL)
         if (check_whitelist(data.ip_address) == NULL)
@@ -107,8 +110,8 @@ void perform_connection(int listen_socket)
     pthread_t thread_id;
     struct sockaddr_in client_address;
     
-    int address_lenght = sizeof(client_address);
-    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_lenght);
+    int address_length = sizeof(client_address);
+    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
 
     struct timeval timeout;
     timeout.tv_sec = 5;
@@ -271,13 +274,21 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
     {
+#if defined(BSD)
+	int symbol_id = arc4random() % strlen(symbols);
+#else
         int symbol_id = rand_r(&time_seed) % strlen(symbols);
+#endif
         slug[i] = symbols[symbol_id];
     }
 
     while (create_directory(slug) == -1)
     {
+#if defined(BSD)
+	int symbol_id = arc4random() % strlen(symbols);
+#else
         int symbol_id = rand_r(&time_seed) % strlen(symbols);
+#endif
         slug[strlen(slug)] = symbols[symbol_id];
     }
 
@@ -286,10 +297,9 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
 int create_directory(char *slug)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 1);
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1);
 
-    strcpy(directory, BASEDIR);
-    strcat(directory, slug);
+    snprintf(directory, strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1, "%s%s%s", BASEDIR, "/", slug);
 
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
     int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
@@ -303,10 +313,9 @@ int create_directory(char *slug)
 
 void save_to_file(char *slug, char *buffer, struct client_data data)
 {
-    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + strlen("/index.txt") + 1);
-    strcpy(directory, BASEDIR);
-    strcat(directory, slug);
-    strcat(directory, "/index.txt");
+    char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1 );
+
+    snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
 
     FILE *fp;
     fp = fopen(directory, "w");
@@ -348,7 +357,7 @@ int check_protocol(char *buffer)
 void set_basedir()
 {
     BASEDIR = getenv("HOME");
-    strcat(BASEDIR, "/code/");
+    strncat(BASEDIR, "/code", 5 * sizeof(char));
 }
 
 void startup_message()
@@ -364,9 +373,12 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "p:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "ep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
+            case 'e':
+                snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                break;
             case 'd':
                 snprintf(DOMAIN, sizeof DOMAIN, "%s%s%s", "http://", optarg, "/");
                 break;
@@ -387,8 +399,6 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'o':
                 BASEDIR = optarg;
-                if((BASEDIR[strlen(BASEDIR) - 1]) != '/')
-                    strcat(BASEDIR, "/");
                 break;
             case 'l':
                 LOG = optarg;
