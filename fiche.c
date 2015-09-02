@@ -27,16 +27,15 @@ $ cat fiche.c | nc localhost 9999
 */
 
 #include <sys/param.h>
+#include <stdio.h>
 #include "fiche.h"
 
 int main(int argc, char **argv)
 {
-    time_seed = time(0);
-
     parse_parameters(argc, argv);
     if (BASEDIR == NULL)
         set_basedir();
-    
+
     startup_message();
 
     int listen_socket, optval = 1;
@@ -109,7 +108,7 @@ void perform_connection(int listen_socket)
 {
     pthread_t thread_id;
     struct sockaddr_in client_address;
-    
+
     int address_length = sizeof(client_address);
     int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
 
@@ -261,7 +260,7 @@ struct sockaddr_in set_address(struct sockaddr_in server_address)
 
 void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 {
-    if (bind(listen_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) 
+    if (bind(listen_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0)
         error("ERROR while binding to port");
     if (listen(listen_socket, QUEUE_SIZE) < 0)
         error("ERROR while starting listening");
@@ -271,28 +270,37 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 {
     int i;
     memset(slug, '\0', slug_length);
+#if !defined(BSD)
+    FILE* frandom = fopen("/dev/urandom", "r");
+#endif
+    int symbol_id;
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
     {
+
 #if defined(BSD)
-	int symbol_id = arc4random() % strlen(symbols);
+	symbol_id = arc4random();
 #else
-        int symbol_id = rand_r(&time_seed) % strlen(symbols);
+        fread(&symbol_id, sizeof(symbol_id), 1, frandom);
 #endif
-        slug[i] = symbols[symbol_id];
+        slug[i] = symbols[symbol_id % strlen(symbols)];
     }
 
     while (create_directory(slug) == -1)
     {
 #if defined(BSD)
-	int symbol_id = arc4random() % strlen(symbols);
+	symbol_id = arc4random();
 #else
-        int symbol_id = rand_r(&time_seed) % strlen(symbols);
+        fread(&symbol_id, sizeof(symbol_id), 1, frandom);
 #endif
-        slug[strlen(slug)] = symbols[symbol_id];
+        slug[strlen(slug)] = symbols[symbol_id % strlen(symbols)];
     }
 
     save_to_file(slug, buffer, data);
+
+#if !defined(BSD)
+    fclose(frandom);
+#endif
 }
 
 int create_directory(char *slug)
