@@ -1,0 +1,20 @@
+AC_INIT([fiche], [0.99])
+AC_CONFIG_SRCDIR([fiche.c])
+AC_CONFIG_HEADERS([config.h])
+
+# Checks for programs.
+AC_PROG_CC
+
+# Function arc4random() is in BSD standard C or GNU systems -lbsd
+AC_SEARCH_LIBS([arc4random], [bsd], [HAVE_ARC4RANDOM="yes"])
+
+# Checks for library functions.
+AC_CHECK_FUNCS([bzero arc4random])
+
+AC_SUBST(HAVE_ARC4RANDOM)
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+
+
+

@@ -5,6 +5,7 @@
 # -----------------------------------
 
 CFLAGS+=-pthread -O2
+CFLAGS+=@LIBS@
 
 all: fiche
 

@@ -27,6 +27,7 @@ $ cat fiche.c | nc localhost 9999
 */
 
 #include <sys/param.h>
+#include "config.h"
 #include "fiche.h"
 
 int main(int argc, char **argv)
@@ -274,7 +275,7 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
     for (i = 0; i <= SLUG_SIZE - 1; i++)
     {
-#if defined(BSD)
+#if defined(HAVE_ARC4RANDOM)
 	int symbol_id = arc4random() % strlen(symbols);
 #else
         int symbol_id = rand_r(&time_seed) % strlen(symbols);
@@ -284,7 +285,7 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
     while (create_directory(slug) == -1)
     {
-#if defined(BSD)
+#if defined(HAVE_ARC4RANDOM)
 	int symbol_id = arc4random() % strlen(symbols);
 #else
         int symbol_id = rand_r(&time_seed) % strlen(symbols);
