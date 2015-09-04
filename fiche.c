@@ -255,12 +255,11 @@ void load_list(char *file_path, int type)
 int create_socket()
 {
     int lsocket = socket(AF_INET, SOCK_STREAM, 0);
+
     if (lsocket < 0)
-    {
         error("ERROR: Couldn't open socket");
-        return 0;
-    }
-    else return lsocket;
+
+    return lsocket;
 }
 
 struct sockaddr_in set_address(struct sockaddr_in server_address)
