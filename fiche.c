@@ -327,8 +327,6 @@ int create_directory(char *slug)
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
     int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
 
-    change_owner(directory);
-
     free(directory);
 
     return result;
@@ -345,16 +343,9 @@ void save_to_file(char *slug, char *buffer, struct client_data data)
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
-    change_owner(directory);
     display_info(data, directory, "");
 
     free(directory);
-}
-
-void change_owner(char *directory)
-{
-    if (UID != -1 && GID != -1)
-        chown(directory, UID, GID);
 }
 
 void set_uid_gid(char *username)

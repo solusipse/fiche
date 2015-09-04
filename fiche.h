@@ -90,7 +90,6 @@ void set_basedir();
 void load_list(char *file_path, int type);
 void parse_parameters(int argc, char **argv);
 void save_log(char *slug, char *hostaddrp, char *h_name);
-void change_owner(char *directory);
 void set_uid_gid();
 
 char *check_banlist(char *ip_address);
