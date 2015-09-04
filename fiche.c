@@ -36,6 +36,17 @@ int main(int argc, char **argv)
     time_seed = time(0);
 
     parse_parameters(argc, argv);
+
+    if (getuid() == 0)
+    {
+        if (UID == -1)
+            error("ERROR: user not set");
+        if (setgid(GID) != 0)
+            error("ERROR: Unable to drop group privileges");
+        if (setuid(UID) != 0)
+            error("ERROR: Unable to drop user privileges");
+    }
+
     if (BASEDIR == NULL)
         set_basedir();
 
