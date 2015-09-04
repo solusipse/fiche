@@ -203,7 +203,7 @@ void display_info(struct client_data data, char *slug, char *message)
     else printf("Saved to: %s\n", slug);
     display_date();
     printf("Client: %s (%s)\n", data.ip_address, data.hostname);
-    display_line();
+    printf("====================================\n");
 }
 
 char *check_banlist(char *ip_address)
@@ -362,11 +362,11 @@ void set_basedir()
 
 void startup_message()
 {
-    display_line();
+    printf("====================================\n");
     printf("Domain name: %s\n", DOMAIN);
     printf("Saving files to: %s\n", BASEDIR);
     printf("Fiche started listening on port %d.\n", PORT);
-    display_line();
+    printf("====================================\n");
 }
 
 void parse_parameters(int argc, char **argv)

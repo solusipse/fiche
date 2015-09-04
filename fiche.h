@@ -77,7 +77,6 @@ int create_directory(char *slug);
 int check_protocol(char *buffer);
 
 void bind_to_port(int listen_socket, struct sockaddr_in serveraddr);
-void display_line(){printf("====================================\n");}
 void error(char *error_code){perror(error_code); exit(1);}
 void display_date();
 void perform_connection(int listen_socket);
