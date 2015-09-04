@@ -92,7 +92,6 @@ void save_log(char *slug, char *hostaddrp, char *h_name);
 void change_owner(char *directory);
 void set_uid_gid();
 
-char *return_line(){return("\n====================================");}
 char *check_banlist(char *ip_address);
 char *check_whitelist(char *ip_address);
 char *get_date();
