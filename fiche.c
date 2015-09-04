@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-epbsdolBuw].
-             [-e] [-d domain] [-p port] [-s slug size]
+usage: fiche [-DepbsdolBuw].
+             [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-D option is for daemonizing fiche
 
 -e option is for using an extended character set for the URL
 
@@ -48,7 +50,18 @@ int main(int argc, char **argv)
     server_address = set_address(server_address);
     bind_to_port(listen_socket, server_address);
 
-    while (1) perform_connection(listen_socket);
+    if (DAEMON)
+    {
+        pid_t pid;
+
+        pid = fork();
+        if (pid == -1)
+            error("ERROR: Failed to fork");
+        if (pid == 0)
+            while (1) perform_connection(listen_socket);
+    }
+    else
+        while (1) perform_connection(listen_socket);
 }
 
 void *thread_connection(void *args)
@@ -371,6 +384,9 @@ void startup_message()
 
 void info(char *buffer, ...)
 {
+    if (DAEMON)
+        return;
+
     printf(buffer);
 }
 
@@ -378,9 +394,14 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "ep:b:s:d:o:l:B:u:w:")) != -1)
+    if (strcmp(*argv, "-D"))
+        DAEMON = 1;
+
+    while ((c = getopt (argc, argv, "Dep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
+            case 'D':
+                break;
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 break;

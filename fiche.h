@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-epbsdolBuw].
-             [-e] [-d domain] [-p port] [-s slug size]
+usage: fiche [-DepbsdolBuw].
+             [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-D option is for daemonizing fiche
 
 -e option is for using an extended character set for the URL
 
@@ -51,6 +53,7 @@ char *BANLIST;
 char *BANFILE;
 char *WHITEFILE;
 char *WHITELIST;
+int DAEMON = 0;
 int PORT = 9999;
 int SLUG_SIZE = 4;
 int BUFSIZE = 32768;
