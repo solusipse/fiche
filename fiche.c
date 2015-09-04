@@ -387,6 +387,12 @@ void startup_message()
     printf("====================================\n");
 }
 
+void error(char *buffer)
+{
+    printf("%s\n", buffer);
+    exit(1);
+}
+
 void parse_parameters(int argc, char **argv)
 {
     int c;
