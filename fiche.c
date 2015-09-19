@@ -170,7 +170,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
     {
-        info("WARNING: Couldn't obtain client's hostname\n");
+        printf("WARNING: Couldn't obtain client's hostname\n");
         data.hostname = "n/a";
     }
     else
@@ -179,7 +179,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostaddrp = inet_ntoa(client_address.sin_addr);
     if (hostaddrp == NULL)
     {
-        info("WARNING: Couldn't obtain client's address\n");
+        printf("WARNING: Couldn't obtain client's address\n");
         data.ip_address = "n/a";
     }
     else
@@ -208,12 +208,17 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
 
 void display_info(struct client_data data, char *slug, char *message)
 {
+    if (DAEMON)
+        return;
+
     if (slug == NULL)
-        info("%s\n", message);
-    else info("Saved to: %s\n", slug);
-    info("%s\n", get_date());
-    info("Client: %s (%s)\n", data.ip_address, data.hostname);
-    info("====================================\n");
+        printf("%s\n", message);
+    else
+        printf("Saved to: %s\n", slug);
+
+    printf("%s\n", get_date());
+    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
+    printf("====================================\n");
 }
 
 char *check_banlist(char *ip_address)
@@ -372,22 +377,17 @@ void set_basedir()
 
 void startup_message()
 {
-    info("====================================\n");
-    info("Domain name: %s\n", DOMAIN);
-    info("Saving files to: %s\n", BASEDIR);
-    info("Fiche started listening on port %d.\n", PORT);
-    info("Buffer size set to: %d.\n", BUFSIZE);
-    info("Slug size set to: %d.\n", SLUG_SIZE);
-    info("Log file: %s\n", LOG);
-    info("====================================\n");
-}
-
-void info(char *buffer, ...)
-{
     if (DAEMON)
         return;
 
-    printf(buffer);
+    printf("====================================\n");
+    printf("Domain name: %s\n", DOMAIN);
+    printf("Saving files to: %s\n", BASEDIR);
+    printf("Fiche started listening on port %d.\n", PORT);
+    printf("Buffer size set to: %d.\n", BUFSIZE);
+    printf("Slug size set to: %d.\n", SLUG_SIZE);
+    printf("Log file: %s\n", LOG);
+    printf("====================================\n");
 }
 
 void parse_parameters(int argc, char **argv)
