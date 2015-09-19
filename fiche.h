@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-epbsdolBuw].
-             [-e] [-d domain] [-p port] [-s slug size]
+usage: fiche [-DepbsdolBuw].
+             [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-D option is for daemonizing fiche
 
 -e option is for using an extended character set for the URL
 
@@ -51,6 +53,7 @@ char *BANLIST;
 char *BANFILE;
 char *WHITEFILE;
 char *WHITELIST;
+int DAEMON = 0;
 int PORT = 9999;
 int SLUG_SIZE = 4;
 int BUFSIZE = 32768;
@@ -77,7 +80,6 @@ int create_directory(char *slug);
 int check_protocol(char *buffer);
 
 void bind_to_port(int listen_socket, struct sockaddr_in serveraddr);
-void display_line(){printf("====================================\n");}
 void error(char *error_code){perror(error_code); exit(1);}
 void display_date();
 void perform_connection(int listen_socket);
@@ -91,8 +93,8 @@ void parse_parameters(int argc, char **argv);
 void save_log(char *slug, char *hostaddrp, char *h_name);
 void change_owner(char *directory);
 void set_uid_gid();
+void info(char *buffer, ...);
 
-char *return_line(){return("\n====================================");}
 char *check_banlist(char *ip_address);
 char *check_whitelist(char *ip_address);
 char *get_date();

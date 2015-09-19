@@ -47,7 +47,7 @@ providing fiche-based service all the time on this address `solusipse.net` and t
 ## Server-side usage ##
 
 ```
-usage: fiche [-pbsdolBuw].
+usage: fiche [-DepbsdolBuw].
              [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -168,6 +168,22 @@ fiche -w /home/www/fiche-whitelist.txt
 #### Whitelist and banlist syntax ####
 
 There is no specific syntax, there files may contain not only addresses.
+
+-----------------
+
+#### Daemonize ####
+
+Fork fiche to the background:
+
+fiche -D
+
+-----------------
+
+#### Extended character set for the URL ####
+
+Fork can extend the charcter set for the URL:
+
+fiche -e
 
 -----------------
 

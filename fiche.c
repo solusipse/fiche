@@ -9,10 +9,12 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-epbsdolBuw].
-             [-e] [-d domain] [-p port] [-s slug size]
+usage: fiche [-DepbsdolBuw].
+             [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
+
+-D option is for daemonizing fiche
 
 -e option is for using an extended character set for the URL
 
@@ -48,7 +50,18 @@ int main(int argc, char **argv)
     server_address = set_address(server_address);
     bind_to_port(listen_socket, server_address);
 
-    while (1) perform_connection(listen_socket);
+    if (DAEMON)
+    {
+        pid_t pid;
+
+        pid = fork();
+        if (pid == -1)
+            error("ERROR: Failed to fork");
+        if (pid == 0)
+            while (1) perform_connection(listen_socket);
+    }
+    else
+        while (1) perform_connection(listen_socket);
 }
 
 void *thread_connection(void *args)
@@ -134,7 +147,7 @@ void perform_connection(int listen_socket)
 
 void display_date()
 {
-    printf("%s\n", get_date());
+    info("%s\n", get_date());
 }
 
 char *get_date()
@@ -160,7 +173,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
     {
-        printf("ERROR: Couldn't obtain client's hostname\n");
+        info("ERROR: Couldn't obtain client's hostname\n");
         data.hostname = "n/a";
     }
     else
@@ -169,7 +182,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostaddrp = inet_ntoa(client_address.sin_addr);
     if (hostaddrp == NULL)
     {
-        printf("ERROR: Couldn't obtain client's address\n");
+        info("ERROR: Couldn't obtain client's address\n");
         data.ip_address = "n/a";
     }
     else
@@ -199,11 +212,11 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
 void display_info(struct client_data data, char *slug, char *message)
 {
     if (slug == NULL)
-        printf("%s\n", message);
-    else printf("Saved to: %s\n", slug);
+        info("%s\n", message);
+    else info("Saved to: %s\n", slug);
     display_date();
-    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
-    display_line();
+    info("Client: %s (%s)\n", data.ip_address, data.hostname);
+    info("====================================\n");
 }
 
 char *check_banlist(char *ip_address)
@@ -362,20 +375,33 @@ void set_basedir()
 
 void startup_message()
 {
-    display_line();
-    printf("Domain name: %s\n", DOMAIN);
-    printf("Saving files to: %s\n", BASEDIR);
-    printf("Fiche started listening on port %d.\n", PORT);
-    display_line();
+    info("====================================\n");
+    info("Domain name: %s\n", DOMAIN);
+    info("Saving files to: %s\n", BASEDIR);
+    info("Fiche started listening on port %d.\n", PORT);
+    info("====================================\n");
+}
+
+void info(char *buffer, ...)
+{
+    if (DAEMON)
+        return;
+
+    printf(buffer);
 }
 
 void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "ep:b:s:d:o:l:B:u:w:")) != -1)
+    if (strcmp(*argv, "-D"))
+        DAEMON = 1;
+
+    while ((c = getopt (argc, argv, "Dep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
+            case 'D':
+                break;
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 break;
@@ -387,7 +413,7 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'B':
                 BUFSIZE = atoi(optarg);
-                printf("Buffer size set to: %d.\n", BUFSIZE);
+                info("Buffer size set to: %d.\n", BUFSIZE);
                 break;
             case 'b':
                 BANFILE = optarg;
@@ -395,14 +421,14 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 's':
                 SLUG_SIZE = atoi(optarg);
-                printf("Slug size set to: %d.\n", SLUG_SIZE);
+                info("Slug size set to: %d.\n", SLUG_SIZE);
                 break;
             case 'o':
                 BASEDIR = optarg;
                 break;
             case 'l':
                 LOG = optarg;
-                printf("Log file: %s\n", LOG);
+                info("Log file: %s\n", LOG);
                 break;
             case 'u':
                 set_uid_gid(optarg);
