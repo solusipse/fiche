@@ -147,11 +147,6 @@ void perform_connection(int listen_socket)
         pthread_detach(thread_id);
 }
 
-void display_date()
-{
-    info("%s\n", get_date());
-}
-
 char *get_date()
 {
     time_t rawtime;
@@ -216,7 +211,7 @@ void display_info(struct client_data data, char *slug, char *message)
     if (slug == NULL)
         info("%s\n", message);
     else info("Saved to: %s\n", slug);
-    display_date();
+    info("%s\n", get_date());
     info("Client: %s (%s)\n", data.ip_address, data.hostname);
     info("====================================\n");
 }
