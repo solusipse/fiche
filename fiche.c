@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     parse_parameters(argc, argv);
     if (BASEDIR == NULL)
         set_basedir();
-    
+
     startup_message();
 
     int listen_socket, optval = 1;
@@ -77,25 +77,23 @@ void *thread_connection(void *args)
     bzero(buffer, BUFSIZE);
     int status = recv(connection_socket, buffer, BUFSIZE, MSG_DONTWAIT);
 
-    if (WHITELIST != NULL)
-        if (check_whitelist(data.ip_address) == NULL)
-        {
-            display_info(data, NULL, "Rejected connection from unknown user.");
-            save_log(NULL, data.ip_address, data.hostname);
-            write(connection_socket, "You are not whitelisted!\n", 26);
-            close(connection_socket);
-            pthread_exit(NULL);
-        }
+    if (WHITELIST != NULL && check_whitelist(data.ip_address) == NULL)
+    {
+        display_info(data, NULL, "Rejected connection from unknown user.");
+        save_log(NULL, data.ip_address, data.hostname);
+        write(connection_socket, "You are not whitelisted!\n", 26);
+        close(connection_socket);
+        pthread_exit(NULL);
+    }
 
-    if (BANLIST != NULL)
-        if (check_banlist(data.ip_address) != NULL)
-        {
-            display_info(data, NULL, "Rejected connection from banned user.");
-            save_log(NULL, data.ip_address, data.hostname);
-            write(connection_socket, "You are banned!\n", 17);
-            close(connection_socket);
-            pthread_exit(NULL);
-        }
+    if (BANLIST != NULL && check_banlist(data.ip_address) != NULL)
+    {
+        display_info(data, NULL, "Rejected connection from banned user.");
+        save_log(NULL, data.ip_address, data.hostname);
+        write(connection_socket, "You are banned!\n", 17);
+        close(connection_socket);
+        pthread_exit(NULL);
+    }
 
     if (check_protocol(buffer) == 1)
         status = -1;
@@ -124,7 +122,7 @@ void perform_connection(int listen_socket)
 {
     pthread_t thread_id;
     struct sockaddr_in client_address;
-    
+
     int address_length = sizeof(client_address);
     int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
 
@@ -345,8 +343,8 @@ void save_to_file(char *slug, char *buffer, struct client_data data)
 
 void change_owner(char *directory)
 {
-    if ((UID != -1)&&(GID != -1))
-    chown(directory, UID, GID);
+    if (UID != -1 && GID != -1)
+        chown(directory, UID, GID);
 }
 
 void set_uid_gid(char *username)
