@@ -381,6 +381,9 @@ void startup_message()
     info("Domain name: %s\n", DOMAIN);
     info("Saving files to: %s\n", BASEDIR);
     info("Fiche started listening on port %d.\n", PORT);
+    info("Buffer size set to: %d.\n", BUFSIZE);
+    info("Slug size set to: %d.\n", SLUG_SIZE);
+    info("Log file: %s\n", LOG);
     info("====================================\n");
 }
 
@@ -396,13 +399,11 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    if (strcmp(*argv, "-D"))
-        DAEMON = 1;
-
     while ((c = getopt (argc, argv, "Dep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
             case 'D':
+                DAEMON = 1;
                 break;
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -415,7 +416,6 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'B':
                 BUFSIZE = atoi(optarg);
-                info("Buffer size set to: %d.\n", BUFSIZE);
                 break;
             case 'b':
                 BANFILE = optarg;
@@ -423,14 +423,12 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 's':
                 SLUG_SIZE = atoi(optarg);
-                info("Slug size set to: %d.\n", SLUG_SIZE);
                 break;
             case 'o':
                 BASEDIR = optarg;
                 break;
             case 'l':
                 LOG = optarg;
-                info("Log file: %s\n", LOG);
                 break;
             case 'u':
                 set_uid_gid(optarg);
