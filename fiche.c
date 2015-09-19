@@ -62,6 +62,8 @@ int main(int argc, char **argv)
     }
     else
         while (1) perform_connection(listen_socket);
+
+    return 0;
 }
 
 void *thread_connection(void *args)
