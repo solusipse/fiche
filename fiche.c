@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     parse_parameters(argc, argv);
     if (BASEDIR == NULL)
         set_basedir();
-    
+
     startup_message();
 
     int listen_socket, optval = 1;
@@ -62,6 +62,8 @@ int main(int argc, char **argv)
     }
     else
         while (1) perform_connection(listen_socket);
+
+    return 0;
 }
 
 void *thread_connection(void *args)
@@ -75,25 +77,23 @@ void *thread_connection(void *args)
     bzero(buffer, BUFSIZE);
     int status = recv(connection_socket, buffer, BUFSIZE, MSG_DONTWAIT);
 
-    if (WHITELIST != NULL)
-        if (check_whitelist(data.ip_address) == NULL)
-        {
-            display_info(data, NULL, "Rejected connection from unknown user.");
-            save_log(NULL, data.ip_address, data.hostname);
-            write(connection_socket, "You are not whitelisted!\n", 26);
-            close(connection_socket);
-            pthread_exit(NULL);
-        }
+    if (WHITELIST != NULL && check_whitelist(data.ip_address) == NULL)
+    {
+        display_info(data, NULL, "Rejected connection from unknown user.");
+        save_log(NULL, data.ip_address, data.hostname);
+        write(connection_socket, "You are not whitelisted!\n", 26);
+        close(connection_socket);
+        pthread_exit(NULL);
+    }
 
-    if (BANLIST != NULL)
-        if (check_banlist(data.ip_address) != NULL)
-        {
-            display_info(data, NULL, "Rejected connection from banned user.");
-            save_log(NULL, data.ip_address, data.hostname);
-            write(connection_socket, "You are banned!\n", 17);
-            close(connection_socket);
-            pthread_exit(NULL);
-        }
+    if (BANLIST != NULL && check_banlist(data.ip_address) != NULL)
+    {
+        display_info(data, NULL, "Rejected connection from banned user.");
+        save_log(NULL, data.ip_address, data.hostname);
+        write(connection_socket, "You are banned!\n", 17);
+        close(connection_socket);
+        pthread_exit(NULL);
+    }
 
     if (check_protocol(buffer) == 1)
         status = -1;
@@ -122,7 +122,7 @@ void perform_connection(int listen_socket)
 {
     pthread_t thread_id;
     struct sockaddr_in client_address;
-    
+
     int address_length = sizeof(client_address);
     int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
 
@@ -143,11 +143,6 @@ void perform_connection(int listen_socket)
         error("ERROR on thread creation");
     else
         pthread_detach(thread_id);
-}
-
-void display_date()
-{
-    info("%s\n", get_date());
 }
 
 char *get_date()
@@ -173,7 +168,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostp = gethostbyaddr((const char *)&client_address.sin_addr.s_addr, sizeof(client_address.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
     {
-        info("ERROR: Couldn't obtain client's hostname\n");
+        printf("WARNING: Couldn't obtain client's hostname\n");
         data.hostname = "n/a";
     }
     else
@@ -182,7 +177,7 @@ struct client_data get_client_address(struct sockaddr_in client_address)
     hostaddrp = inet_ntoa(client_address.sin_addr);
     if (hostaddrp == NULL)
     {
-        info("ERROR: Couldn't obtain client's address\n");
+        printf("WARNING: Couldn't obtain client's address\n");
         data.ip_address = "n/a";
     }
     else
@@ -211,12 +206,17 @@ void save_log(char *slug, char *hostaddrp, char *h_name)
 
 void display_info(struct client_data data, char *slug, char *message)
 {
+    if (DAEMON)
+        return;
+
     if (slug == NULL)
-        info("%s\n", message);
-    else info("Saved to: %s\n", slug);
-    display_date();
-    info("Client: %s (%s)\n", data.ip_address, data.hostname);
-    info("====================================\n");
+        printf("%s\n", message);
+    else
+        printf("Saved to: %s\n", slug);
+
+    printf("%s\n", get_date());
+    printf("Client: %s (%s)\n", data.ip_address, data.hostname);
+    printf("====================================\n");
 }
 
 char *check_banlist(char *ip_address)
@@ -343,8 +343,8 @@ void save_to_file(char *slug, char *buffer, struct client_data data)
 
 void change_owner(char *directory)
 {
-    if ((UID != -1)&&(GID != -1))
-    chown(directory, UID, GID);
+    if (UID != -1 && GID != -1)
+        chown(directory, UID, GID);
 }
 
 void set_uid_gid(char *username)
@@ -375,32 +375,28 @@ void set_basedir()
 
 void startup_message()
 {
-    info("====================================\n");
-    info("Domain name: %s\n", DOMAIN);
-    info("Saving files to: %s\n", BASEDIR);
-    info("Fiche started listening on port %d.\n", PORT);
-    info("====================================\n");
-}
-
-void info(char *buffer, ...)
-{
     if (DAEMON)
         return;
 
-    printf(buffer);
+    printf("====================================\n");
+    printf("Domain name: %s\n", DOMAIN);
+    printf("Saving files to: %s\n", BASEDIR);
+    printf("Fiche started listening on port %d.\n", PORT);
+    printf("Buffer size set to: %d.\n", BUFSIZE);
+    printf("Slug size set to: %d.\n", SLUG_SIZE);
+    printf("Log file: %s\n", LOG);
+    printf("====================================\n");
 }
 
 void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    if (strcmp(*argv, "-D"))
-        DAEMON = 1;
-
     while ((c = getopt (argc, argv, "Dep:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
             case 'D':
+                DAEMON = 1;
                 break;
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -413,7 +409,6 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 'B':
                 BUFSIZE = atoi(optarg);
-                info("Buffer size set to: %d.\n", BUFSIZE);
                 break;
             case 'b':
                 BANFILE = optarg;
@@ -421,14 +416,12 @@ void parse_parameters(int argc, char **argv)
                 break;
             case 's':
                 SLUG_SIZE = atoi(optarg);
-                info("Slug size set to: %d.\n", SLUG_SIZE);
                 break;
             case 'o':
                 BASEDIR = optarg;
                 break;
             case 'l':
                 LOG = optarg;
-                info("Log file: %s\n", LOG);
                 break;
             case 'u':
                 set_uid_gid(optarg);
