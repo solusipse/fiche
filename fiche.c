@@ -36,6 +36,17 @@ int main(int argc, char **argv)
     time_seed = time(0);
 
     parse_parameters(argc, argv);
+
+    if (getuid() == 0)
+    {
+        if (UID == -1)
+            error("ERROR: user not set");
+        if (setgid(GID) != 0)
+            error("ERROR: Unable to drop group privileges");
+        if (setuid(UID) != 0)
+            error("ERROR: Unable to drop user privileges");
+    }
+
     if (BASEDIR == NULL)
         set_basedir();
 
@@ -255,12 +266,11 @@ void load_list(char *file_path, int type)
 int create_socket()
 {
     int lsocket = socket(AF_INET, SOCK_STREAM, 0);
+
     if (lsocket < 0)
-    {
         error("ERROR: Couldn't open socket");
-        return 0;
-    }
-    else return lsocket;
+
+    return lsocket;
 }
 
 struct sockaddr_in set_address(struct sockaddr_in server_address)
@@ -317,8 +327,6 @@ int create_directory(char *slug)
     mkdir(BASEDIR, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
     int result = mkdir(directory, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
 
-    change_owner(directory);
-
     free(directory);
 
     return result;
@@ -335,16 +343,9 @@ void save_to_file(char *slug, char *buffer, struct client_data data)
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
-    change_owner(directory);
     display_info(data, directory, "");
 
     free(directory);
-}
-
-void change_owner(char *directory)
-{
-    if (UID != -1 && GID != -1)
-        chown(directory, UID, GID);
 }
 
 void set_uid_gid(char *username)
@@ -386,6 +387,12 @@ void startup_message()
     printf("Slug size set to: %d.\n", SLUG_SIZE);
     printf("Log file: %s\n", LOG);
     printf("====================================\n");
+}
+
+void error(char *buffer)
+{
+    printf("%s\n", buffer);
+    exit(1);
 }
 
 void parse_parameters(int argc, char **argv)

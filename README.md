@@ -115,12 +115,14 @@ http://domain.com/abcdef/
 
 #### User name ####
 
-If you use fiche as service (see details below) you may want to save files as other user, to do that use `-u` option,
-there's example:
+Set the user that fiche runs as using the `-u` option, example:
 
 ```
-fiche -u http
+fiche -u _fiche
 ```
+
+This option has effect only if fiche was started by root, otherwise it is ignored and fiche runs under the
+current user id.
 
 -----------------
 
@@ -221,7 +223,7 @@ You can run fiche as service, there is simple systemd example:
 Description=FICHE-SERVER
 
 [Service]
-ExecStart=/usr/local/bin/fiche -d code.solusipse.net -o /home/www/code/ -l /home/www/log.txt
+ExecStart=/usr/local/bin/fiche -d code.solusipse.net -o /home/www/code/ -l /home/www/log.txt -u _fiche
 
 [Install]
 WantedBy=multi-user.target
