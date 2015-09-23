@@ -3,6 +3,9 @@ fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)]
 
 Command line pastebin for sharing terminal output.
 
+## Secure branch ##
+This branch is the result of merging two pull requests: [#16](https://github.com/solusipse/fiche/pull/16) by [Adam Schwalm](https://github.com/ALSchwalm) and [#17](https://github.com/solusipse/fiche/pull/17) by [Renaud Allard](https://github.com/renaudallard), which contained some security-related improvements. It is recommended for `BSD` users or for those who would like to `arc4random`.
+
 ## Installation ##
 
 1. Clone into repository:
