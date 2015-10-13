@@ -244,7 +244,11 @@ char *check_whitelist(char *ip_address)
 
 void load_list(char *file_path, int type)
 {
-    FILE *fp = fopen(file_path, "r");
+    FILE *fp;
+    
+    if (( fp = fopen(file_path, "r")) == NULL )
+      error("cannot load list");
+    
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
