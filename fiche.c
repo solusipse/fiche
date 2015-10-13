@@ -40,11 +40,11 @@ int main(int argc, char **argv)
     if (getuid() == 0)
     {
         if (UID == -1)
-            error("ERROR: user not set");
+            error("user not set");
         if (setgid(GID) != 0)
-            error("ERROR: Unable to drop group privileges");
+            error("Unable to drop group privileges");
         if (setuid(UID) != 0)
-            error("ERROR: Unable to drop user privileges");
+            error("Unable to drop user privileges");
     }
 
     if (BASEDIR == NULL)
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 
         pid = fork();
         if (pid == -1)
-            error("ERROR: Failed to fork");
+            error("Failed to fork");
         if (pid == 0)
             while (1) perform_connection(listen_socket);
     }
@@ -142,16 +142,16 @@ void perform_connection(int listen_socket)
     timeout.tv_usec = 0;
 
     if (setsockopt (connection_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        error("ERROR while setting setsockopt timeout");
+        error("while setting setsockopt timeout");
     if (setsockopt (connection_socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        error("ERROR while setting setsockopt timeout");
+        error("while setting setsockopt timeout");
 
     struct thread_arguments arguments;
     arguments.connection_socket = connection_socket;
     arguments.client_address = client_address;
 
     if (pthread_create(&thread_id, NULL, &thread_connection, &arguments) != 0)
-        error("ERROR on thread creation");
+        error("on thread creation");
     else
         pthread_detach(thread_id);
 }
@@ -244,7 +244,11 @@ char *check_whitelist(char *ip_address)
 
 void load_list(char *file_path, int type)
 {
-    FILE *fp = fopen(file_path, "r");
+    FILE *fp;
+    
+    if (( fp = fopen(file_path, "r")) == NULL )
+      error("cannot load list");
+    
     fseek(fp, 0, SEEK_END);
     long fsize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
@@ -268,7 +272,7 @@ int create_socket()
     int lsocket = socket(AF_INET, SOCK_STREAM, 0);
 
     if (lsocket < 0)
-        error("ERROR: Couldn't open socket");
+        error("Couldn't open socket");
 
     return lsocket;
 }
@@ -285,9 +289,9 @@ struct sockaddr_in set_address(struct sockaddr_in server_address)
 void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 {
     if (bind(listen_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) 
-        error("ERROR while binding to port");
+        error("while binding to port");
     if (listen(listen_socket, QUEUE_SIZE) < 0)
-        error("ERROR while starting listening");
+        error("while starting listening");
 }
 
 void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data)
@@ -391,7 +395,7 @@ void startup_message()
 
 void error(char *buffer)
 {
-    printf("%s\n", buffer);
+    printf("Error: %s\n", buffer);
     exit(1);
 }
 
