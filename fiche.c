@@ -93,7 +93,7 @@ void *thread_connection(void *args)
         display_info(data, NULL, "Rejected connection from unknown user.");
         save_log(NULL, data.ip_address, data.hostname);
         if (write(connection_socket, "You are not whitelisted!\n", 26) < 0)
-          error("Error writing on stream socket");
+          printf("Error writing on stream socket\n");
         close(connection_socket);
         pthread_exit(NULL);
     }
@@ -103,7 +103,7 @@ void *thread_connection(void *args)
         display_info(data, NULL, "Rejected connection from banned user.");
         save_log(NULL, data.ip_address, data.hostname);
         if (write(connection_socket, "You are banned!\n", 17) < 0)
-          error("Error writing on stream socket");
+          printf("Error writing on stream socket\n");
         close(connection_socket);
         pthread_exit(NULL);
     }
@@ -119,14 +119,14 @@ void *thread_connection(void *args)
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
         if (write(connection_socket, response, strlen(response)) < 0)
-          error("Error writing on stream socket");
+          printf("Error writing on stream socket\n");
     }
     else
     {
         display_info(data, NULL, "Invalid connection.");
         save_log(NULL, data.ip_address, data.hostname);
         if (write(connection_socket, "Use netcat.\n", 12) < 0)
-          error("Error writing on stream socket");
+          printf("Error writing on stream socket\n");
     }
 
     close(connection_socket);
