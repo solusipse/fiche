@@ -36,6 +36,7 @@ int main(int argc, char **argv)
     time_seed = time(0);
 
     parse_parameters(argc, argv);
+    set_domain_name();
 
     if (getuid() == 0)
     {
@@ -404,11 +405,21 @@ void error(char *buffer)
     exit(1);
 }
 
+void set_domain_name() {
+    char b[128];
+    memcpy(b, DOMAIN, sizeof DOMAIN);
+
+    if (HTTPS)
+        snprintf(DOMAIN, sizeof DOMAIN, "%s%s", "https://", b);
+    else
+        snprintf(DOMAIN, sizeof DOMAIN, "%s%s", "http://", b);
+}
+
 void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "Dep:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "DeSp:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
             case 'D':
@@ -417,8 +428,11 @@ void parse_parameters(int argc, char **argv)
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 break;
+            case 'S':
+                HTTPS = 1;
+                break;
             case 'd':
-                snprintf(DOMAIN, sizeof DOMAIN, "%s%s%s", "http://", optarg, "/");
+                snprintf(DOMAIN, sizeof DOMAIN, "%s%s", optarg, "/");
                 break;
             case 'p':
                 PORT = atoi(optarg);
@@ -447,7 +461,7 @@ void parse_parameters(int argc, char **argv)
                 load_list(WHITEFILE, 1);
                 break;
             default:
-                printf("usage: fiche [-pbsdolBuw].\n");
+                printf("usage: fiche [-pbsdSolBuw].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
                 printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
                 printf("                     [-l log file] [-b banlist] [-w whitelist]\n");
