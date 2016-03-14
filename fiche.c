@@ -59,8 +59,21 @@ int main(int argc, char **argv)
     listen_socket = create_socket();
     setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
 
-    server_address = set_address(server_address);
-    bind_to_port(listen_socket, server_address);
+#if (HAVE_INET6)
+    struct sockaddr_in6 server_address6;
+    if (IPv6)
+    {
+        server_address6 = set_address6(server_address6);
+        bind_to_port6(listen_socket, server_address6);
+    }
+    else
+    {
+#else
+    if (1) {
+#endif
+        server_address = set_address(server_address);
+        bind_to_port(listen_socket, server_address);
+    }
 
     if (DAEMON)
     {
@@ -80,10 +93,22 @@ int main(int argc, char **argv)
 
 void *thread_connection(void *args)
 {
+    struct client_data data;
     int connection_socket = ((struct thread_arguments *) args ) -> connection_socket;
-    struct sockaddr_in client_address = ((struct thread_arguments *) args ) -> client_address;
-
-    struct client_data data = get_client_address(client_address);
+#if (HAVE_INET6)
+    if (IPv6)
+    {
+        struct sockaddr_in6 client_address6 = ((struct thread_arguments *) args ) -> client_address6;
+        data = get_client_address6(client_address6);
+    }
+    else
+    {
+#else
+    if (1) {
+#endif
+        struct sockaddr_in client_address = ((struct thread_arguments *) args ) -> client_address;
+        data = get_client_address(client_address);
+    }
 
     char buffer[BUFSIZE];
     bzero(buffer, BUFSIZE);
@@ -138,9 +163,23 @@ void perform_connection(int listen_socket)
 {
     pthread_t thread_id;
     struct sockaddr_in client_address;
+    int connection_socket;
 
-    int address_length = sizeof(client_address);
-    int connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
+#if (HAVE_INET6)
+    struct sockaddr_in6 client_address6;
+    if (IPv6)
+    {
+        int address_length = sizeof(client_address6);
+        connection_socket = accept(listen_socket, (struct sockaddr *) &client_address6, (void *) &address_length);
+    }
+    else
+    {
+#else
+    if (1) {
+#endif
+        int address_length = sizeof(client_address);
+        connection_socket = accept(listen_socket, (struct sockaddr *) &client_address, (void *) &address_length);
+    }
 
     struct timeval timeout;
     timeout.tv_sec = 5;
@@ -153,7 +192,12 @@ void perform_connection(int listen_socket)
 
     struct thread_arguments arguments;
     arguments.connection_socket = connection_socket;
-    arguments.client_address = client_address;
+#if (HAVE_INET6)
+    if (IPv6)
+        arguments.client_address6 = client_address6;
+    else
+#endif
+        arguments.client_address = client_address;
 
     if (pthread_create(&thread_id, NULL, &thread_connection, &arguments) != 0)
         error("on thread creation");
@@ -201,6 +245,36 @@ struct client_data get_client_address(struct sockaddr_in client_address)
 
     return data;
 }
+
+#if (HAVE_INET6)
+struct client_data get_client_address6(struct sockaddr_in6 client_address6)
+{
+    struct hostent *hostp;
+    struct client_data data;
+    static char hostaddrp[INET6_ADDRSTRLEN];
+
+    hostp = gethostbyaddr((const char *)&client_address6.sin6_addr, sizeof(client_address6.sin6_addr), AF_INET6);
+    if (hostp == NULL)
+    {
+        printf("WARNING: Couldn't obtain client's hostname\n");
+        data.hostname = "n/a";
+    }
+    else
+        data.hostname = hostp->h_name;
+
+    inet_ntop(AF_INET6, &(client_address6.sin6_addr), hostaddrp,
+              INET6_ADDRSTRLEN);
+    if (hostaddrp == NULL)
+    {
+        printf("WARNING: Couldn't obtain client's address\n");
+        data.ip_address = "n/a";
+    }
+    else
+        data.ip_address = hostaddrp;
+
+    return data;
+}
+#endif
 
 void save_log(char *slug, char *hostaddrp, char *h_name)
 {
@@ -275,7 +349,13 @@ void load_list(char *file_path, int type)
 
 int create_socket()
 {
-    int lsocket = socket(AF_INET, SOCK_STREAM, 0);
+    int lsocket;
+#if (HAVE_INET6)
+    if (IPv6)
+        lsocket = socket(AF_INET6, SOCK_STREAM, 0);
+    else
+#endif
+        lsocket = socket(AF_INET, SOCK_STREAM, 0);
 
     if (lsocket < 0)
         error("Couldn't open socket");
@@ -292,6 +372,17 @@ struct sockaddr_in set_address(struct sockaddr_in server_address)
     return server_address;
 }
 
+#if (HAVE_INET6)
+struct sockaddr_in6 set_address6(struct sockaddr_in6 server_address6)
+{
+    bzero((char *) &server_address6, sizeof(server_address6));
+    server_address6.sin6_family = AF_INET6;
+    server_address6.sin6_addr = in6addr_any;
+    server_address6.sin6_port = htons((unsigned short)PORT);
+    return server_address6;
+}
+#endif
+
 void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 {
     if (bind(listen_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) 
@@ -299,6 +390,16 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
     if (listen(listen_socket, QUEUE_SIZE) < 0)
         error("while starting listening");
 }
+
+#if (HAVE_INET6)
+void bind_to_port6(int listen_socket, struct sockaddr_in6 server_address6)
+{
+    if (bind(listen_socket, (struct sockaddr *) &server_address6, sizeof(server_address6)) < 0) 
+        error("while binding to port");
+    if (listen(listen_socket, QUEUE_SIZE) < 0)
+        error("while starting listening");
+}
+#endif
 
 void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data)
 {
@@ -419,11 +520,14 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "DeSp:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1)
         switch (c)
         {
             case 'D':
                 DAEMON = 1;
+                break;
+            case '6':
+                IPv6 = 1;
                 break;
             case 'e':
                 snprintf(symbols, sizeof symbols, "%s", "abcdefghijklmnopqrstuvwxyz0123456789-+_=.ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -461,7 +565,7 @@ void parse_parameters(int argc, char **argv)
                 load_list(WHITEFILE, 1);
                 break;
             default:
-                printf("usage: fiche [-pbsdSolBuw].\n");
+                printf("usage: fiche [-D6epbsdSolBuw].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
                 printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
                 printf("                     [-l log file] [-b banlist] [-w whitelist]\n");

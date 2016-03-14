@@ -47,7 +47,7 @@ providing fiche-based service all the time on this address `solusipse.net` and t
 ## Server-side usage ##
 
 ```
-usage: fiche [-DepbsdolBuw].
+usage: fiche [-D6epbsdSolBuw].
              [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -186,6 +186,14 @@ fiche -D
 Fork can extend the charcter set for the URL:
 
 fiche -e
+
+-----------------
+
+#### Use IPv6 ####
+
+this will allow fiche to accept connections from IPv6 clients:
+
+fiche -6
 
 -----------------
 

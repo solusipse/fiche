@@ -31,6 +31,10 @@ $ cat fiche.c | nc localhost 9999
 #ifndef FICHE_H
 #define FICHE_H
 
+#ifndef HAVE_INET6
+#define HAVE_INET6 1
+#endif
+
 #include <pwd.h>
 #include <time.h>
 #include <netdb.h>
@@ -56,6 +60,7 @@ char *WHITELIST;
 int DAEMON = 0;
 int HTTPS = 0;
 int PORT = 9999;
+int IPv6 = 0;
 int SLUG_SIZE = 4;
 int BUFSIZE = 32768;
 int QUEUE_SIZE = 500;
@@ -68,6 +73,9 @@ struct thread_arguments
 {
 	int connection_socket;
 	struct sockaddr_in client_address;
+#if (HAVE_INET6)
+	struct sockaddr_in6 client_address6;
+#endif
 };
 
 struct client_data
@@ -81,6 +89,9 @@ int create_directory(char *slug);
 int check_protocol(char *buffer);
 
 void bind_to_port(int listen_socket, struct sockaddr_in serveraddr);
+#if (HAVE_INET6)
+void bind_to_port6(int listen_socket, struct sockaddr_in6 serveraddr6);
+#endif
 void error(char *buffer);
 void perform_connection(int listen_socket);
 void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data);
@@ -99,6 +110,12 @@ char *check_whitelist(char *ip_address);
 char *get_date();
 
 struct sockaddr_in set_address(struct sockaddr_in serveraddr);
+#if (HAVE_INET6)
+struct sockaddr_in6 set_address6(struct sockaddr_in6 serveraddr6);
+#endif
 struct client_data get_client_address(struct sockaddr_in client_address);
+#if (HAVE_INET6)
+struct client_data get_client_address6(struct sockaddr_in6 client_address6);
+#endif
 
 #endif
