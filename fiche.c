@@ -9,7 +9,7 @@ Live example: http://code.solusipse.net/
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-DepbsdolBuw].
+usage: fiche [-DepbsdolBuwT].
              [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -17,6 +17,8 @@ usage: fiche [-DepbsdolBuw].
 -D option is for daemonizing fiche
 
 -e option is for using an extended character set for the URL
+
+-T option is for setting fiche to use a .txt file
 
 Compile with Makefile or manually with -O2 and -pthread flags.
 To install use `make install` command.
@@ -144,8 +146,12 @@ void *thread_connection(void *args)
         char slug[SLUG_SIZE+8];
         generate_url(buffer, slug, SLUG_SIZE+8, data);
         save_log(slug, data.ip_address, data.hostname);
-        char response[strlen(slug) + strlen(DOMAIN) + 2];
-        snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
+        char response[strlen(slug) + strlen(DOMAIN) + 6];
+        if(NO_CREATE_DIRECTORY) {
+          snprintf(response, sizeof response, "%s%s%s\n", DOMAIN, slug, FILE_EXTENSION);
+        } else {
+          snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
+        }
         if (write(connection_socket, response, strlen(response)) < 0)
           printf("Error writing on stream socket\n");
     }
@@ -435,6 +441,9 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 
 int create_directory(char *slug)
 {
+    if(NO_CREATE_DIRECTORY)
+      return 0;
+
     char *directory = malloc(strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1);
 
     snprintf(directory, strlen(BASEDIR) + strlen(slug) + sizeof(char) + 1, "%s%s%s", BASEDIR, "/", slug);
@@ -451,10 +460,19 @@ void save_to_file(char *slug, char *buffer, struct client_data data)
 {
     char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1 );
 
-    snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
+    if(NO_CREATE_DIRECTORY) {
+        snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, ".txt");
+    } else {
+        snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
+    }
 
     FILE *fp;
     fp = fopen(directory, "w");
+    if (fp == NULL) {
+      printf("Failed to open file %s.\n", directory);
+      exit(1);
+    }
+
     fprintf(fp, "%s", buffer);
     fclose(fp);
 
@@ -524,7 +542,7 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "D6eSp:b:s:d:o:l:B:u:w:T")) != -1)
         switch (c)
         {
             case 'D':
@@ -568,8 +586,11 @@ void parse_parameters(int argc, char **argv)
                 WHITEFILE = optarg;
                 load_list(WHITEFILE, 1);
                 break;
+            case 'T':
+                NO_CREATE_DIRECTORY = 1;
+                break;
             default:
-                printf("usage: fiche [-D6epbsdSolBuw].\n");
+                printf("usage: fiche [-D6epbsdSolBuwT].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
                 printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
                 printf("                     [-l log file] [-b banlist] [-w whitelist]\n");
