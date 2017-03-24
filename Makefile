@@ -4,9 +4,13 @@
 # solusipse.net
 # -----------------------------------
 
+CC=musl-gcc
 CFLAGS+=-pthread -O2
 
 all: fiche
+
+docker: fiche
+	docker build . -t fiche:latest
 
 install: fiche
 	install -m 0755 fiche ${PREFIX}
