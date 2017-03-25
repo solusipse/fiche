@@ -258,7 +258,7 @@ server {
 
     location / {
             root /home/www/code/;
-            index index.txt index.html;
+            index index.txt index.png index.jpeg;
     }
 }
 ```
