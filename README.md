@@ -47,7 +47,7 @@ providing fiche-based service all the time on this address `solusipse.net` and t
 ## Server-side usage ##
 
 ```
-usage: fiche [-D6epbsdSolBuw].
+usage: fiche [-D6epbsdSolBuwT].
              [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -194,6 +194,15 @@ fiche -e
 this will allow fiche to accept connections from IPv6 clients:
 
 fiche -6
+
+-----------------
+
+#### No Subdirectories ####
+
+This is a matter of taste, files will be placed in the output
+directory with a .txt extension.
+
+fiche -T
 
 -----------------
 

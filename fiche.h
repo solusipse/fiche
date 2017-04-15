@@ -66,6 +66,8 @@ int BUFSIZE = 32768;
 int QUEUE_SIZE = 500;
 char DOMAIN[128] = "localhost/";
 char symbols[67] = "abcdefghijklmnopqrstuvwxyz0123456789";
+char* FILE_EXTENSION = ".txt";
+int NO_CREATE_DIRECTORY = 0;
 
 unsigned int time_seed;
 
