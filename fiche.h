@@ -62,10 +62,24 @@ int HTTPS = 0;
 int PORT = 9999;
 int IPv6 = 0;
 int SLUG_SIZE = 4;
-int BUFSIZE = 32768;
+int BUFSIZE = 1048576; // 1MB bufsize
 int QUEUE_SIZE = 500;
 char DOMAIN[128] = "localhost/";
 char symbols[67] = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+// MAGIC NUMBERS
+// PNG: 89 50 4E 47 0D 0A 1A 0A
+unsigned char PNG_HEADER[8] = { '\x89', '\x50', '\x4e', '\x47', '\x0d', '\x0a', '\x1a',
+    '\x0a' };
+// JPG: FF D8 and end with FF D9
+unsigned char JPG_HEADER[2] = { '\xff', '\xd8' };
+unsigned char JPG_TRAILER[2] = { '\xff', '\xd9' };
+
+enum filetype {
+    TXT = 1,
+    PNG,
+    JPG
+};
 
 unsigned int time_seed;
 
@@ -94,8 +108,10 @@ void bind_to_port6(int listen_socket, struct sockaddr_in6 serveraddr6);
 #endif
 void error(char *buffer);
 void perform_connection(int listen_socket);
-void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data);
-void save_to_file(char *buffer, char *slug, struct client_data data);
+void generate_url(char *buffer, int buflen, char *slug, size_t slug_length, struct client_data data);
+void save_to_file(char *buffer, int buflen, char *slug, struct client_data data, enum filetype ft);
+enum filetype data_magic(char *buffer);
+unsigned int data_len(char *buffer, enum filetype ft);
 void display_info(struct client_data data, char *slug, char *message);
 void startup_message();
 void set_basedir();

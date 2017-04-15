@@ -111,9 +111,7 @@ void *thread_connection(void *args)
         client_address = ((struct thread_arguments *) args ) -> client_address;
         data = get_client_address(client_address);
     }
-
-    char buffer[BUFSIZE];
-    bzero(buffer, BUFSIZE);
+    char *buffer = calloc (BUFSIZE, 1);
     int status = recv(connection_socket, buffer, BUFSIZE, MSG_WAITALL);
 
     if (WHITELIST != NULL && check_whitelist(data.ip_address) == NULL)
@@ -142,7 +140,7 @@ void *thread_connection(void *args)
     if (status != -1)
     {
         char slug[SLUG_SIZE+8];
-        generate_url(buffer, slug, SLUG_SIZE+8, data);
+        generate_url(buffer, status, slug, SLUG_SIZE+8, data);
         save_log(slug, data.ip_address, data.hostname);
         char response[strlen(slug) + strlen(DOMAIN) + 2];
         snprintf(response, sizeof response, "%s%s\n", DOMAIN, slug);
@@ -156,7 +154,7 @@ void *thread_connection(void *args)
         if (write(connection_socket, "Use netcat.\n", 12) < 0)
           printf("Error writing on stream socket\n");
     }
-
+    free (buffer);
     close(connection_socket);
     pthread_exit(NULL);
 }
@@ -405,7 +403,7 @@ void bind_to_port6(int listen_socket, struct sockaddr_in6 server_address6)
 }
 #endif
 
-void generate_url(char *buffer, char *slug, size_t slug_length, struct client_data data)
+void generate_url(char *buffer, int buflen, char *slug, size_t slug_length, struct client_data data)
 {
     int i;
     memset(slug, '\0', slug_length);
@@ -429,8 +427,8 @@ void generate_url(char *buffer, char *slug, size_t slug_length, struct client_da
 #endif
         slug[strlen(slug)] = symbols[symbol_id];
     }
-
-    save_to_file(slug, buffer, data);
+    enum filetype ft = data_magic(buffer);
+    save_to_file(buffer, buflen, slug, data, ft);
 }
 
 int create_directory(char *slug)
@@ -447,15 +445,35 @@ int create_directory(char *slug)
     return result;
 }
 
-void save_to_file(char *slug, char *buffer, struct client_data data)
+enum filetype data_magic(char *buffer) {
+    if (strncmp (buffer, PNG_HEADER, 8) == 0) {
+        return PNG;
+    } else if (strncmp (buffer, JPG_HEADER, 2) == 0) {
+        fprintf (stderr, "JPG: NYI\n");
+    } else {
+        return TXT;
+    }
+}
+
+void save_to_file(char *buffer, int buflen, char *slug, struct client_data data, enum filetype ft)
 {
     char *directory = malloc(strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1 );
-
-    snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
+    
+    switch (ft) {
+        case TXT:
+            snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.txt");
+            break;
+        case PNG:
+            snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.png");
+            break;
+        case JPG:
+            snprintf(directory, strlen(BASEDIR) + strlen(slug) + 11 * sizeof(char) + 1, "%s%s%s%s", BASEDIR , "/", slug, "/index.jpg");
+            break;
+    }
 
     FILE *fp;
     fp = fopen(directory, "w");
-    fprintf(fp, "%s", buffer);
+    fwrite (buffer, buflen, 1, fp);
     fclose(fp);
 
     display_info(data, directory, "");
@@ -496,7 +514,9 @@ void startup_message()
 
     printf("====================================\n");
     printf("Domain name: %s\n", DOMAIN);
-    printf("Saving files to: %s\n", BASEDIR);
+    printf("Saving text files to: %s\n", BASEDIR);
+    // TODO: enable saving image files
+    printf("Saving image files to: %s\n", BASEDIR);
     printf("Fiche started listening on port %d.\n", PORT);
     printf("Buffer size set to: %d.\n", BUFSIZE);
     printf("Slug size set to: %d.\n", SLUG_SIZE);
