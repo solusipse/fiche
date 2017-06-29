@@ -48,6 +48,7 @@ $ cat fiche.c | nc localhost 9999
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <net/if.h>
 
 int UID = -1;
 int GID = -1;
@@ -55,8 +56,13 @@ char *LOG;
 char *BASEDIR;
 char *BANLIST;
 char *BANFILE;
+char *INT;
 char *WHITEFILE;
 char *WHITELIST;
+char BINDIP[INET_ADDRSTRLEN] = "127.0.0.1";
+#if (HAVE_INET6)
+char BINDIP6[INET6_ADDRSTRLEN] = "::1";
+#endif
 int DAEMON = 0;
 int HTTPS = 0;
 int PORT = 9999;
