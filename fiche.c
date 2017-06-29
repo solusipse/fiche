@@ -371,7 +371,7 @@ struct sockaddr_in set_address(struct sockaddr_in server_address)
 {
     bzero((char *) &server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    inet_pton(AF_INET, BINDIP, &(server_address.sin_addr)); 
     server_address.sin_port = htons((unsigned short)PORT);
     return server_address;
 }
@@ -381,7 +381,8 @@ struct sockaddr_in6 set_address6(struct sockaddr_in6 server_address6)
 {
     bzero((char *) &server_address6, sizeof(server_address6));
     server_address6.sin6_family = AF_INET6;
-    server_address6.sin6_addr = in6addr_any;
+    inet_pton(AF_INET6, BINDIP6, &(server_address6.sin6_addr)); 
+    server_address6.sin6_scope_id = if_nametoindex(INT);
     server_address6.sin6_port = htons((unsigned short)PORT);
     return server_address6;
 }
@@ -399,7 +400,7 @@ void bind_to_port(int listen_socket, struct sockaddr_in server_address)
 void bind_to_port6(int listen_socket, struct sockaddr_in6 server_address6)
 {
     if (bind(listen_socket, (struct sockaddr *) &server_address6, sizeof(server_address6)) < 0) 
-        error("while binding to port");
+        error("while binding to port6");
     if (listen(listen_socket, QUEUE_SIZE) < 0)
         error("while starting listening");
 }
@@ -497,6 +498,11 @@ void startup_message()
     printf("====================================\n");
     printf("Domain name: %s\n", DOMAIN);
     printf("Saving files to: %s\n", BASEDIR);
+    if (IPv6 == 0 ) {
+        printf("Fiche started listening on ip %s.\n", BINDIP);
+    } else {
+        printf("Fiche started listening on ip %s.\n", BINDIP6);
+    }
     printf("Fiche started listening on port %d.\n", PORT);
     printf("Buffer size set to: %d.\n", BUFSIZE);
     printf("Slug size set to: %d.\n", SLUG_SIZE);
@@ -524,7 +530,7 @@ void parse_parameters(int argc, char **argv)
 {
     int c;
 
-    while ((c = getopt (argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1)
+    while ((c = getopt (argc, argv, "D6eSp:b:s:d:o:l:B:u:w:i:h:")) != -1)
         switch (c)
         {
             case 'D':
@@ -568,11 +574,25 @@ void parse_parameters(int argc, char **argv)
                 WHITEFILE = optarg;
                 load_list(WHITEFILE, 1);
                 break;
+            case 'i':
+		if (IPv6 == 1) {
+		    INT = optarg;
+		}
+		break;
+            case 'h':
+		if (IPv6 == 1) {
+		    strcpy(BINDIP6, optarg);
+	            fprintf(stdout,"%s \n", BINDIP6);
+		} else {
+                    strcpy(BINDIP, optarg);
+		}
+                break;
             default:
-                printf("usage: fiche [-D6epbsdSolBuw].\n");
+                printf("usage: fiche [-D6epbsdSolBuwh].\n");
                 printf("                     [-d domain] [-p port] [-s slug_size]\n");
                 printf("                     [-o output directory] [-B buffer_size] [-u user name]\n");
                 printf("                     [-l log file] [-b banlist] [-w whitelist]\n");
+                printf("                     [-h bind address] [-i bind interface (for ipv6 only)]\n");
                 exit(1);
         }
 }
