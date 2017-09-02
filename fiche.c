@@ -252,7 +252,8 @@ int fiche_run(Fiche_Settings settings) {
     if ( settings.log_file_path ) {
 
         // Create log file if it doesn't exist
-        creat(settings.log_file_path, S_IRWXU);
+        FILE *f = fopen(settings.log_file_path, "a+");
+        fclose(f);
 
         // Then check if it's accessible
         if ( access(settings.log_file_path, W_OK) != 0 ) {
