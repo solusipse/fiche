@@ -3,15 +3,40 @@ fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)]
 
 Command line pastebin for sharing terminal output.
 
+# Client-side usage
+
+Self-explanatory live examples (using public server):
+
+```
+echo just testing! | nc termbin.com 9999
+```
+
+```
+cat file.txt | nc termbin.com 9999
+```
+
+In case you installed and started fiche on localhost:
+
+```
+ls -la | nc localhost 9999
+```
+
+## Requirements
+To use fiche you have to have netcat installed. You probably already have it - try typing `nc` or `netcat` into your terminal!
+
+-------------------------------------------------------------------------------
+
+# Server-side usage
+
 ## Installation ##
 
-1. Clone into repository:
+1. Clone:
 
     ```
-    https://github.com/solusipse/fiche.git
+    git clone https://github.com/solusipse/fiche.git
     ```
 
-2. Build program:
+2. Build:
 
     ```
     make
@@ -23,28 +48,11 @@ Command line pastebin for sharing terminal output.
     sudo make install
     ```
 
-## Client-side usage ##
+-------------------------------------------------------------------------------
 
-Self explanatory live examples:
+## Settings
 
-```
-ls -la | nc localhost 9999
-```
-
-```
-cat file.txt | nc solusipse.net 9999
-```
-
-```
-echo just testing! | nc code.solusipse.net 9999
-```
-
-If you haven't already set up your server on localhost, try second or third command. My personal server is
-providing fiche-based service all the time on this address `solusipse.net` and this port `9999`.
-
-- To upload text you need to have netcat installed (to check if netcat is installed, simply type ```nc``` in terminal).
-
-## Server-side usage ##
+### Usage
 
 ```
 usage: fiche [-D6epbsdSolBuw].
@@ -53,41 +61,32 @@ usage: fiche [-D6epbsdSolBuw].
              [-l log file] [-b banlist] [-w whitelist]
 ```
 
-These are command line arguments. You don't have to provide any, but providing basic is recommended. Without them, program
-will use these default settings:
+These are command line arguments. You don't have to provide any of them to run the application. Default settings will be used in such case.
+
+### Examples
+
+-------------------------------------------------------------------------------
+
+#### Output directory `-o`
+
+Relative or absolute path to the directory where you want to store user-posted pastes.
 
 ```
-domain = "http://localhost/";
-basedir= "~/code/";
-port = 9999;
-slug_size = 4;
-buffer_size = 8192;
-```
-
-### Arguments ###
-
-Most important is providing **basedir** and **domain**.
-
------------------
-
-#### Basedir ####
-
-Basedir should be **absolute** path to directory where you would like to store text files.
-
-
-```
-fiche -o /absolute/path/to/directory/
+fiche -o ./code
 ```
 
 ```
 fiche -o /home/www/code/
 ```
 
------------------
+__Default value:__ `./code`
 
-#### Domain ####
+-------------------------------------------------------------------------------
 
-Domain should be provided in such format ```domain.com```.
+#### Domain `-d`
+
+This will be used as a prefix for an output received by the client.
+Value will be prepended with `http`.
 
 ```
 fiche -d domain.com
@@ -97,158 +96,123 @@ fiche -d domain.com
 fiche -d subdomain.domain.com
 ```
 
------------------
+__Default value:__ `localhost`
 
-#### Slug size ####
+-------------------------------------------------------------------------------
 
-This will force fiche to create random slugs with given length, example:
+#### Slug size `-s`
+
+This will force slugs to be of requires length:
 
 ```
 fiche -s 6
 ```
 
-```
-http://domain.com/abcdef/
-```
+__Output url with default value__: `http://localhost/xxxx`,
+where x is a randomized character
 
------------------
+__Output url with example value 6__: `http://localhost/xxxx`,
+where is a randomized character
 
-#### User name ####
+__Default value:__ 4
 
-Set the user that fiche runs as using the `-u` option, example:
+-------------------------------------------------------------------------------
+
+#### User name `-u`
+
+Fiche will try to switch to the requested user on startup if any is provided.
 
 ```
 fiche -u _fiche
 ```
 
-This option has effect only if fiche was started by root, otherwise it is ignored and fiche runs under the
-current user id.
+__Default value:__ not set
 
------------------
+__WARNING:__ This requires that fiche is started as a root.
 
-#### Buffersize ####
+-------------------------------------------------------------------------------
 
-This parameter defines max file size uploaded by user, by default it is set to `32768`.
-Use `-B` parameter to change it:
+#### Buffer size `-B`
+
+This parameter defines size of the buffer used for getting data from the user.
+Maximum size (in bytes) of all input files is defined by this value.
 
 ```
 fiche -B 2048
 ```
 
------------------
+__Default value:__ 32768
 
-#### Log file ###
+-------------------------------------------------------------------------------
 
-Path to file where all logs will be stored:
+#### Log file `-l`
 
 ```
 fiche -l /home/www/fiche-log.txt
 ```
 
------------------
+__Default value:__ not set
 
-#### Ban list ###
+__WARNING:__ this file has to be user-writable
 
-Path to file where you provided all banned IP adresses:
+-------------------------------------------------------------------------------
 
-```
-fiche -b /home/www/fiche-bans.txt
-```
+#### Ban list `-b`
 
------------------
-
-#### White list ####
-
-If whitelist mode is enabled, only addresses from list will be able to upload files. There's example:
+Relative or absolute path to a file containing IP addresses of banned users.
 
 ```
-fiche -w /home/www/fiche-whitelist.txt
+fiche -b fiche-bans.txt
 ```
 
------------------
+__Format of the file:__ this file should contain only addresses, one per line.
 
-#### Whitelist and banlist syntax ####
+__Default value:__ not set
 
-There is no specific syntax, there files may contain not only addresses.
+__WARNING:__ not implemented yet
 
------------------
+-------------------------------------------------------------------------------
 
-#### Daemonize ####
+#### White list `-w`
 
-Fork fiche to the background:
-
-fiche -D
-
------------------
-
-#### Extended character set for the URL ####
-
-Fork can extend the charcter set for the URL:
-
-fiche -e
-
------------------
-
-#### Use IPv6 ####
-
-this will allow fiche to accept connections from IPv6 clients:
-
-fiche -6
-
------------------
-
-#### Examples ####
-
-Logging connections with banlist:
+If whitelist mode is enabled, only addresses from the list will be able
+to upload files.
 
 ```
-fiche -d domain.com -l /home/www/log.txt -b /home/www/bans.txt
+fiche -w fiche-whitelist.txt
 ```
 
------------------
+__Format of the file:__ this file should contain only addresses, one per line.
 
-Only for personal use with whitelist
+__Default value:__ not set
 
-```
-fiche -d domain.com -w /home/www/whitelist.txt
-```
+__WARNING:__ not implemented yet
 
------------------
+-------------------------------------------------------------------------------
 
-Custom output directory, bigger slug size, reduced buffer, custom port:
+### Running as a service
 
-```
-fiche -d domain.com -o /media/disk/fiche/ -s 8 -B 2048 -p 6666
-```
-
-
-
-## Running as service ##
-You can run fiche as service, there is simple systemd example:
-
+There's a simple systemd example:
 ```
 [Unit]
 Description=FICHE-SERVER
 
 [Service]
-ExecStart=/usr/local/bin/fiche -d code.solusipse.net -o /home/www/code/ -l /home/www/log.txt -u _fiche
+ExecStart=/usr/local/bin/fiche -d yourdomain.com -o /path/to/output -l /path/to/log -u youruser
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-In service mode you have to set output directory with `-o` parameter, there's example:
+__WARNING:__ In service mode you have to set output directory with `-o` parameter, there's example:
 
-```
-fiche -o /home/www/code/
-```
+-------------------------------------------------------------------------------
 
-## Webserver ##
+## Example nginx config
 
-To make files available for users, you need to host them somehow. Http server is easiest option. Just set root 
-directory to ```BASEDIR```.
+Fiche has no http server built-in, thus you need to setup one if you want to make files available through http.
 
-There is sample configuration for nginx:
+There's a sample configuration for nginx:
 
 ```
 server {
@@ -263,6 +227,6 @@ server {
 }
 ```
 
-## License ##
+# License
 
 Fiche is MIT licensed.
