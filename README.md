@@ -3,7 +3,7 @@ fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)]
 
 Command line pastebin for sharing terminal output.
 
-## Client-side usage
+# Client-side usage
 
 Self-explanatory live examples (using public server):
 
@@ -21,11 +21,30 @@ In case you installed and started fiche on localhost:
 ls -la | nc localhost 9999
 ```
 
-### Useful aliases
+-------------------------------------------------------------------------------
+
+## Useful aliases
 
 You can make your life easier by adding a termbin alias to your rc file. We list some of them here:
 
-#### `tb` alias
+-------------------------------------------------------------------------------
+
+### Pure-bash alternative to netcat
+
+__Linux (Bash):__
+```
+alias tb="(exec 3<>/dev/tcp/termbin.com/9999; cat >&3; cat <&3; exec 3<&-)"
+```
+
+```
+echo less typing now! | tb
+```
+
+_See [#42](https://github.com/solusipse/fiche/issues/42), [#43](https://github.com/solusipse/fiche/issues/43) for more info._
+
+-------------------------------------------------------------------------------
+
+### `tb` alias
 
 __Linux (Bash):__
 ```
@@ -46,7 +65,9 @@ echo 'alias tb="nc termbin.com 9999"' >> .bash_profile
 echo less typing now! | tb
 ```
 
-#### Copy output to clipboard
+-------------------------------------------------------------------------------
+
+### Copy output to clipboard
 
 __Linux (Bash):__
 ```
@@ -69,14 +90,16 @@ echo less typing now! | tbc
 
 __Remember__ to restart your terminal session after adding any of provided above!
 
+-------------------------------------------------------------------------------
+
 ## Requirements
 To use fiche you have to have netcat installed. You probably already have it - try typing `nc` or `netcat` into your terminal!
 
 -------------------------------------------------------------------------------
 
-## Server-side usage
+# Server-side usage
 
-### Installation
+## Installation
 
 1. Clone:
 
@@ -98,7 +121,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
 
 -------------------------------------------------------------------------------
 
-### Usage
+## Usage
 
 ```
 usage: fiche [-D6epbsdSolBuw].
