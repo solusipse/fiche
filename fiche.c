@@ -141,7 +141,7 @@ static int create_directory(char *output_dir, char *slug);
  * @arg data Buffer with data received from the user
  * @arg path Path at which file containing data from the buffer will be created
  */
-static int save_to_file(uint8_t *data, char *output_dir, char *path);
+static int save_to_file(uint8_t *data, char *output_dir, char *slug);
 
 
 // Logging-related
@@ -626,7 +626,6 @@ static void *handle_connection(void *args) {
 
         // Cleanup
         free(c);
-        free(slug);
         pthread_exit(NULL);
         return NULL;
     }
