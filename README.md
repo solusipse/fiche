@@ -31,7 +31,7 @@ You can make your life easier by adding a termbin alias to your rc file. We list
 
 ### Pure-bash alternative to netcat
 
-__Linux (Bash):__
+__Linux/macOS:__
 ```
 alias tb="(exec 3<>/dev/tcp/termbin.com/9999; cat >&3; cat <&3; exec 3<&-)"
 ```
