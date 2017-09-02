@@ -1,2 +1,8 @@
 # ignore binaries
 /fiche
+
+# ignore default outpit dir
+code/
+
+# ignore log files
+*.log
