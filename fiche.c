@@ -590,6 +590,11 @@ static void *handle_connection(void *args) {
         // with generated slug on disk
         generate_slug(&slug, c->settings->slug_len, extra);
 
+        // Something went wrong in slug generation, break here
+        if (!slug) {
+            break;
+        }
+
         // Increment counter for additional letters needed
         ++extra;
 
@@ -611,6 +616,23 @@ static void *handle_connection(void *args) {
     }
     while(create_directory(c->settings->output_dir_path, slug) != 0);
 
+
+    // Slug generation failed, we have to finish here
+    if (!slug) {
+        print_error("Couldn't generate a slug!");
+        print_separator();
+
+        close(c->socket);
+
+        // Cleanup
+        free(c);
+        free(slug);
+        pthread_exit(NULL);
+        return NULL;
+    }
+
+
+    // Save to file failed, we have to finish here
     if ( save_to_file(buffer, c->settings->output_dir_path, slug) != 0 ) {
         print_error("Couldn't save a file!");
         print_separator();
@@ -671,7 +693,7 @@ static void generate_slug(char **output, uint8_t length, uint8_t extra_length) {
     *output = calloc(length + 1 + extra_length, sizeof(char));
 
     if (*output == NULL) {
-        // TODO
+        return;
     }
 
     // Take n-th symbol from symbol table and use it for slug generation
