@@ -705,6 +705,10 @@ static void generate_slug(char **output, uint8_t length, uint8_t extra_length) {
 
 
 static int create_directory(char *output_dir, char *slug) {
+    if (!slug) {
+        return -1;
+    }
+
     // Additional byte is for the slash
     size_t len = strlen(output_dir) + strlen(slug) + 2;
 
@@ -740,10 +744,13 @@ static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
     // Attempt file saving
     FILE *f = fopen(path, "w");
     if (!f) {
+        free(path);
         return -1;
     }
 
     if ( fprintf(f, "%s", data) < 0 ) {
+        fclose(f);
+        free(path);
         return -1;
     }
 
