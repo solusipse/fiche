@@ -615,10 +615,11 @@ static void *handle_connection(void *args) {
         print_error("Couldn't save a file!");
         print_separator();
 
+        close(c->socket);
+
         // Cleanup
         free(c);
         free(slug);
-        close(c->socket);
         pthread_exit(NULL);
         return NULL;
     }
