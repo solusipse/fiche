@@ -3,7 +3,7 @@ fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)]
 
 Command line pastebin for sharing terminal output.
 
-# Client-side usage
+## Client-side usage
 
 Self-explanatory live examples (using public server):
 
@@ -21,14 +21,62 @@ In case you installed and started fiche on localhost:
 ls -la | nc localhost 9999
 ```
 
+### Useful aliases
+
+You can make your life easier by adding a termbin alias to your rc file. We list some of them here:
+
+#### `tb` alias
+
+__Linux (Bash):__
+```
+echo 'alias tb="nc termbin.com 9999"' >> .bashrc
+```
+
+```
+echo less typing now! | tb
+```
+
+__macOS:__
+
+```
+echo 'alias tb="nc termbin.com 9999"' >> .bash_profile
+```
+
+```
+echo less typing now! | tb
+```
+
+#### Copy output to clipboard
+
+__Linux (Bash):__
+```
+echo 'alias tbc="netcat termbin.com 9999 | xclip -selection c"' >> .bashrc
+```
+
+```
+echo less typing now! | tbc
+```
+
+__macOS:__
+
+```
+echo 'alias tbc="nc termbin.com 9999 | pbcopy"' >> .bash_profile
+```
+
+```
+echo less typing now! | tbc
+```
+
+__Remember__ to restart your terminal session after adding any of provided above!
+
 ## Requirements
 To use fiche you have to have netcat installed. You probably already have it - try typing `nc` or `netcat` into your terminal!
 
 -------------------------------------------------------------------------------
 
-# Server-side usage
+## Server-side usage
 
-## Installation ##
+### Installation
 
 1. Clone:
 
@@ -50,8 +98,6 @@ To use fiche you have to have netcat installed. You probably already have it - t
 
 -------------------------------------------------------------------------------
 
-## Settings
-
 ### Usage
 
 ```
@@ -61,9 +107,9 @@ usage: fiche [-D6epbsdSolBuw].
              [-l log file] [-b banlist] [-w whitelist]
 ```
 
-These are command line arguments. You don't have to provide any of them to run the application. Default settings will be used in such case.
+These are command line arguments. You don't have to provide any of them to run the application. Default settings will be used in such case. See section below for more info.
 
-### Examples
+### Settings
 
 -------------------------------------------------------------------------------
 
@@ -204,11 +250,11 @@ ExecStart=/usr/local/bin/fiche -d yourdomain.com -o /path/to/output -l /path/to/
 WantedBy=multi-user.target
 ```
 
-__WARNING:__ In service mode you have to set output directory with `-o` parameter, there's example:
+__WARNING:__ In service mode you have to set output directory with `-o` parameter.
 
 -------------------------------------------------------------------------------
 
-## Example nginx config
+### Example nginx config
 
 Fiche has no http server built-in, thus you need to setup one if you want to make files available through http.
 
@@ -227,6 +273,6 @@ server {
 }
 ```
 
-# License
+## License
 
 Fiche is MIT licensed.
