@@ -13,6 +13,7 @@ addons:
 install:
   - export PYTHONUSERBASE=~/.local
   - easy_install --user scan-build
+  - easy_install --user typing
 
 script:
   - cppcheck --enable=all --error-exitcode=1 --inconclusive main.c fiche.c
