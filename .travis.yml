@@ -9,6 +9,10 @@ addons:
     packages:
       - cppcheck
       - clang-3.5
+      
+install:
+  - export PYTHONUSERBASE=~/.local
+  - easy_install --user scan-build
 
 script:
   - cppcheck --enable=all --error-exitcode=1 --inconclusive main.c fiche.c
