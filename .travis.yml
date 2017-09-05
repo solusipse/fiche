@@ -8,6 +8,7 @@ addons:
   apt:
     packages:
       - cppcheck
+      - clang-3.5
 
 script:
   - cppcheck --enable=all --error-exitcode=1 --inconclusive main.c fiche.c
