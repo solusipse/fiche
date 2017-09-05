@@ -1,2 +1,14 @@
 language: c
-script: make
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+      - cppcheck
+
+script:
+  - cppcheck --enable=all --error-exitcode=1 --inconclusive main.c fiche.c
+  - make
