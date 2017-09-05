@@ -175,7 +175,7 @@ static void log_entry(const Fiche_Settings *s, const char *ip,
  * @brief Returns string containing current date
  * @warning Output has to be freed!
  */
-static char *get_date();
+static void get_date(char *buf);
 
 
 /**
@@ -223,9 +223,9 @@ int fiche_run(Fiche_Settings settings) {
 
     // Display welcome message
     {
-        char *date = get_date();
+        char date[64];
+        get_date(date);
         print_status("Starting fiche on %s...", date);
-        free(date);
     }
 
     // Try to set requested user
@@ -329,34 +329,32 @@ static void log_entry(const Fiche_Settings *s, const char *ip,
         return;
     }
 
-    char *date = get_date();
+    char date[64];
+    get_date(date);
 
     // Write entry to file
     fprintf(f, "%s -- %s -- %s (%s)\n", slug, date, ip, hostname);
     fclose(f);
-
-    free(date);
 }
 
 
-static char *get_date() {
+static void get_date(char *buf) {
     struct tm curtime;
     time_t ltime;
 
     ltime=time(&ltime);
     localtime_r(&ltime, &curtime);
 
-    // Much more than required, date string is usually about 25 chars
-    char buf[128];
-    asctime_r(&curtime, buf);
-
-    char *out = malloc(strlen(buf) + 1);
-    strcpy(out, buf);
+    // Save data to provided buffer
+    if (asctime_r(&curtime, buf) == 0) {
+        // Couldn't get date, setting first byte of the
+        // buffer to zero so it won't be displayed
+        buf[0] = 0;
+        return;
+    }
 
     // Remove newline char
-    out[strlen(buf)-1] = 0;
-
-    return out;
+    buf[strlen(buf)-1] = 0;
 }
 
 
@@ -366,7 +364,7 @@ static int set_domain_name(Fiche_Settings *settings) {
     const int len = strlen(settings->domain) + strlen(prefix) + 1;
 
     char *b = malloc(len);
-    if (b == NULL) {
+    if (!b) {
         return -1;
     }
 
@@ -501,7 +499,6 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
     }
 
     // Create an argument for the thread function
-    //struct fiche_connection c = { s, address, settings };
     struct fiche_connection *c = malloc(sizeof(*c));
     if (!c) {
         print_error("Couldn't allocate memory!");
@@ -546,9 +543,9 @@ static void *handle_connection(void *args) {
 
     // Print status on this connection
     {
-        char *date = get_date();
+        char date[64];
+        get_date(date);
         print_status("%s", date);
-        free(date);
 
         print_status("Incoming connection from: %s (%s).", ip, hostname);
     }
@@ -715,6 +712,9 @@ static int create_directory(char *output_dir, char *slug) {
 
     // Generate a path
     char *path = malloc(len);
+    if (!path) {
+        return -1;
+    }
     snprintf(path, len, "%s%s%s", output_dir, "/", slug);
 
     // Create output directory, just in case
@@ -740,6 +740,10 @@ static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
 
     // Generate a path
     char *path = malloc(len);
+    if (!path) {
+        return -1;
+    }
+
     snprintf(path, len, "%s%s%s%s%s", output_dir, "/", slug, "/", file_name);
 
     // Attempt file saving
