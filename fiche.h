@@ -79,6 +79,11 @@ typedef struct Fiche_Settings {
      */
     char *whitelist_path;
 
+    /**
+     * @brief Don't include subdirectory name
+     */
+    char no_subdirs;
+
 
 
 } Fiche_Settings;

@@ -117,7 +117,7 @@ static void *handle_connection(void *args);
  * @arg extra_length additional length that was added to speed-up the
  *      generation process
  *
- * This function is used in connection with create_directory function
+ * This function is used in connection with create_slug_path function
  * It generates strings that are used to create a directory for
  * user-provided data. If directory already exists, we ask this function
  * to generate another slug with increased size.
@@ -126,13 +126,14 @@ static void generate_slug(char **output, uint8_t length, uint8_t extra_length);
 
 
 /**
- * @brief Creates a directory at requested path using requested slug
+ * @brief Creates a slug directory with requested slug
+ @ @remarks Only ensures that path is available if using no-subdirs mode
  * @returns 0 if succeded, 1 if failed or dir already existed
  *
  * @arg output_dir root directory for all pastes
  * @arg slug directory name for a particular paste
  */
-static int create_directory(char *output_dir, char *slug);
+static int create_slug_path(char *output_dir, char *slug, char no_subdirs);
 
 
 /**
@@ -141,7 +142,7 @@ static int create_directory(char *output_dir, char *slug);
  * @arg data Buffer with data received from the user
  * @arg path Path at which file containing data from the buffer will be created
  */
-static int save_to_file(uint8_t *data, char *output_dir, char *slug);
+static int save_to_file(uint8_t *data, char *output_dir, char *slug, char no_subdirs);
 
 
 // Logging-related
@@ -210,7 +211,9 @@ void fiche_init(Fiche_Settings *settings) {
         // path to banlist
         NULL,
         // path to whitelist
-        NULL
+        NULL,
+        // no subdirectories
+        0
     };
 
     // Copy default settings to provided instance
@@ -612,8 +615,7 @@ static void *handle_connection(void *args) {
         }
 
     }
-    while(create_directory(c->settings->output_dir_path, slug) != 0);
-
+    while(create_slug_path(c->settings->output_dir_path, slug, c->settings->no_subdirs) != 0);
 
     // Slug generation failed, we have to finish here
     if (!slug) {
@@ -630,7 +632,7 @@ static void *handle_connection(void *args) {
 
 
     // Save to file failed, we have to finish here
-    if ( save_to_file(buffer, c->settings->output_dir_path, slug) != 0 ) {
+    if ( save_to_file(buffer, c->settings->output_dir_path, slug, c->settings->no_subdirs) != 0 ) {
         print_error("Couldn't save a file!");
         print_separator();
 
@@ -702,29 +704,39 @@ static void generate_slug(char **output, uint8_t length, uint8_t extra_length) {
 }
 
 
-static int create_directory(char *output_dir, char *slug) {
+static int create_slug_path(char *output_dir, char *slug, char no_subdirs) {
     if (!slug) {
         return -1;
     }
 
-    // Additional byte is for the slash
-    size_t len = strlen(output_dir) + strlen(slug) + 2;
+    // Additional byte is for the slash, for no_subdirs 4 additional bytes for suffix
+    size_t len = no_subdirs ? strlen(output_dir) + strlen(slug) + 6 : strlen(output_dir) + strlen(slug) + 2;
 
     // Generate a path
     char *path = malloc(len);
     if (!path) {
         return -1;
     }
-    snprintf(path, len, "%s%s%s", output_dir, "/", slug);
+    if (no_subdirs) {
+        snprintf(path, len, "%s%s%s%s", output_dir, "/", slug, ".txt");
+    } else {
+        snprintf(path, len, "%s%s%s", output_dir, "/", slug);
+    }
 
     // Create output directory, just in case
     mkdir(output_dir, S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP);
 
+    int r;
+
     // Create slug directory
-    const int r = mkdir(
-        path,
-        S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP
-    );
+    if (no_subdirs) {
+        r = access(path, F_OK) == 0;
+    } else {
+        r = mkdir(
+            path,
+            S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP
+        );
+    }
 
     free(path);
 
@@ -732,11 +744,13 @@ static int create_directory(char *output_dir, char *slug) {
 }
 
 
-static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
+static int save_to_file(uint8_t *data, char *output_dir, char *slug, char no_subdirs) {
     char *file_name = "index.txt";
 
-    // Additional 2 bytes are for 2 slashes
-    size_t len = strlen(output_dir) + strlen(slug) + strlen(file_name) + 3;
+    // Additional 2 bytes are for 2 slashes, 4 bytes for suffix
+    size_t len = no_subdirs ?
+                   strlen(output_dir) + strlen(file_name) + 6 :
+                   strlen(output_dir) + strlen(slug) + strlen(file_name) + 3;
 
     // Generate a path
     char *path = malloc(len);
@@ -744,7 +758,11 @@ static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
         return -1;
     }
 
-    snprintf(path, len, "%s%s%s%s%s", output_dir, "/", slug, "/", file_name);
+    if (no_subdirs) {
+        snprintf(path, len, "%s%s%s%s", output_dir, "/", slug, ".txt");
+    } else {
+        snprintf(path, len, "%s%s%s%s%s", output_dir, "/", slug, "/", file_name);
+    }
 
     // Attempt file saving
     FILE *f = fopen(path, "w");

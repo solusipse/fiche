@@ -9,7 +9,7 @@ Live example: http://termbin.com
 
 -------------------------------------------------------------------------------
 
-usage: fiche [-DepbsdolBuw].
+usage: fiche [-DepbsdolBuwT].
              [-D] [-e] [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist]
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
     // Parse input arguments
     int c;
-    while ((c = getopt(argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1) {
+    while ((c = getopt(argc, argv, "D6eSp:b:s:d:o:l:B:u:w:T")) != -1) {
         switch (c) {
 
             // domain
@@ -110,10 +110,17 @@ int main(int argc, char **argv) {
             }
             break;
 
+            // slug mode text files
+            case 'T':
+            {
+                fs.no_subdirs = 1;
+            }
+            break;
+
             // Display help in case of any unsupported argument
             default:
             {
-                printf("usage: fiche [-dpsoBulbw].\n");
+                printf("usage: fiche [-dpsoBulbwT].\n");
                 printf("             [-d domain] [-p port] [-s slug size]\n");
                 printf("             [-o output directory] [-B buffer size] [-u user name]\n");
                 printf("             [-l log file] [-b banlist] [-w whitelist]\n");
