@@ -259,6 +259,19 @@ __WARNING:__ not implemented yet
 
 -------------------------------------------------------------------------------
 
+#### No subdirectories `-T`
+
+If no subdirectories mode is enabled, there will not be a separate subdirectory
+for each slug, instead slugs will be suffixed by .txt
+
+```
+fiche -T
+```
+
+__Default value:__ not set
+
+-------------------------------------------------------------------------------
+
 ### Running as a service
 
 There's a simple systemd example:
