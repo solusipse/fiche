@@ -120,10 +120,10 @@ int main(int argc, char **argv) {
             // Display help in case of any unsupported argument
             default:
             {
-                printf("usage: fiche [-dpsoBulbw].\n");
+                printf("usage: fiche [-dpsSoBulbw].\n");
                 printf("             [-d domain] [-p port] [-s slug size]\n");
                 printf("             [-o output directory] [-B buffer size] [-u user name]\n");
-                printf("             [-l log file] [-b banlist] [-w whitelist]\n");
+                printf("             [-l log file] [-b banlist] [-w whitelist] [-S]\n");
                 return 0;
             }
             break;
