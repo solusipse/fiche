@@ -127,7 +127,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
 usage: fiche [-D6epbsdSolBuw].
              [-d domain] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
-             [-l log file] [-b banlist] [-w whitelist]
+             [-l log file] [-b banlist] [-w whitelist] [-S]
 ```
 
 These are command line arguments. You don't have to provide any of them to run the application. Default settings will be used in such case. See section below for more info.
@@ -171,7 +171,7 @@ __Default value:__ `localhost`
 
 #### Slug size `-s`
 
-This will force slugs to be of requires length:
+This will force slugs to be of required length:
 
 ```
 fiche -s 6
@@ -184,6 +184,19 @@ __Output url with example value 6__: `http://localhost/xxxx`,
 where is a randomized character
 
 __Default value:__ 4
+
+-------------------------------------------------------------------------------
+
+#### HTTPS `-S`
+
+If set, fiche returns url with https prefix instead of http
+
+```
+fiche -S
+```
+
+__Output url with this parameter__: `https://localhost/xxxx`,
+where x is a randomized character
 
 -------------------------------------------------------------------------------
 
