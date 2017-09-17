@@ -201,6 +201,8 @@ void fiche_init(Fiche_Settings *settings) {
         9999,
         // slug length
         4,
+        // https
+        false,
         // buffer length
         32768,
         // user name
@@ -360,7 +362,12 @@ static void get_date(char *buf) {
 
 static int set_domain_name(Fiche_Settings *settings) {
 
-    const char *prefix = "http://";
+    char *prefix = "";
+    if (settings->https) {
+        prefix = "https://";
+    } else {
+        prefix = "http://";
+    }
     const int len = strlen(settings->domain) + strlen(prefix) + 1;
 
     char *b = malloc(len);

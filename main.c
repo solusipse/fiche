@@ -68,6 +68,13 @@ int main(int argc, char **argv) {
             }
             break;
 
+            // https
+            case 'S':
+            {
+                fs.https = true;
+            }
+            break;
+
             // output directory path
             case 'o':
             {

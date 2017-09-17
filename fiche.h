@@ -24,6 +24,7 @@ $ cat fiche.c | nc localhost 9999
 #define FICHE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 /**
@@ -51,6 +52,11 @@ typedef struct Fiche_Settings {
      * @brief Length of a paste's name
      */
     uint8_t slug_len;
+
+    /**
+     * @brief If set, returns url with https prefix instead of http
+     */
+    bool https;
 
     /**
      * @brief Connection buffer length
