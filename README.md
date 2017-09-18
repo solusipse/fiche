@@ -165,6 +165,10 @@ fiche -d domain.com
 fiche -d subdomain.domain.com
 ```
 
+```
+fiche -d subdomain.domain.com/some_directory
+```
+
 __Default value:__ `localhost`
 
 -------------------------------------------------------------------------------
