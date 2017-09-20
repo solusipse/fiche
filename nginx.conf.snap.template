@@ -1,0 +1,26 @@
+worker_processes  1;
+
+error_log syslog:server=unix:/dev/log;
+
+
+events {
+    worker_connections  1024;
+}
+
+http {
+
+    access_log syslog:server=unix:/dev/log;
+    error_log syslog:server=unix:/dev/log;
+
+    server {
+       listen 80;
+       server_name _;
+       charset utf-8;
+
+       location / {
+             root /var/snap/fiche/common/fiche-data/;
+             index index.html index.htm index.txt;
+	     try_files $uri $uri/ =404;
+       }
+    }
+}

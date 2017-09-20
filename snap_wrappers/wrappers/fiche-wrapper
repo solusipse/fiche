@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+[ -d $SNAP_COMMON/fiche-data ] || mkdir -p $SNAP_COMMON/fiche-data
+
+[ -e $SNAP_COMMON/fiche-ip ] || echo "0.0.0.0" > $SNAP_COMMON/fiche-ip
+
+my_ip=`cat $SNAP_COMMON/fiche-ip`
+
+exec "$SNAP/bin/fiche" -o "$SNAP_COMMON/fiche-data/" -p 9999 -d "$my_ip" "$@"
