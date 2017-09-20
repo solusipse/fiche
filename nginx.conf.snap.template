@@ -18,8 +18,9 @@ http {
        charset utf-8;
 
        location / {
-             root /var/snap/fiche/common/fiche-data;
-             index index.txt index.html;
+             root /var/snap/fiche/common/fiche-data/;
+             index index.html index.htm index.txt;
+	     try_files $uri $uri/ =404;
        }
     }
 }
