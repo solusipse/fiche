@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+mkdir -p $SNAP_COMMON/nginx/logs
+chmod -R 777 $SNAP_COMMON/nginx 
+
+exec "$SNAP/nginx/sbin/nginx" "-c" "$SNAP/nginx/conf/nginx.conf" "-p" "$SNAP_COMMON/nginx" "-g" "daemon off;" "$@"

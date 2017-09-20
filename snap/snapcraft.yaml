@@ -1,0 +1,38 @@
+name: fiche
+version: '0.1'
+summary: Command line pastebin for sharing terminal output.
+description: |
+  Fiche snap!
+
+grade: devel
+confinement: devmode
+
+
+apps:
+  fiche:
+    command: wrappers/fiche-wrapper
+    daemon: simple
+  nginx:
+    command: wrappers/nginx-wrapper
+    daemon: simple
+
+parts:
+  fiche:
+    plugin: make
+    source: .
+    stage:
+      - bin
+    prime:
+      - bin
+    install: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      cp ./fiche $SNAPCRAFT_PART_INSTALL/bin/fiche
+  nginx:
+    plugin: nginx
+    install: |
+      rm $SNAPCRAFT_PART_INSTALL/nginx/conf/nginx.conf.default
+      rm $SNAPCRAFT_PART_INSTALL/nginx/conf/nginx.conf
+      cp ./nginx.conf.snap.template $SNAPCRAFT_PART_INSTALL/nginx/conf/nginx.conf
+  wrappers:
+    plugin: dump
+    source: snap_wrappers/

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+[ -d $SNAP_COMMON/fiche-data ] || mkdir -p $SNAP_COMMON/fiche-data
+
+exec "$SNAP/bin/fiche" -o "$SNAP_COMMON/fiche-data" -p 9999 "$@"
