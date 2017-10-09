@@ -19,14 +19,18 @@ def main():
 @app.route('/<slug>')
 def beautify(slug):
     # Return 404 in case of urls longer than 64 chars
-    if (len(slug) > 64):
+    if len(slug) > 64:
         abort(404)
 
     # Create path for the target dir
     target_dir = os.path.join(args.root_dir, slug)
 
+    # Block directory traversal attempts
+    if not target_dir.startswith(args.root_dir):
+        abort(404)
+
     # Check if directory with requested slug exists
-    if (os.path.isdir(target_dir)):
+    if os.path.isdir(target_dir):
         target_file = os.path.join(target_dir, "index.txt")
         
         # File index.txt found inside that dir
