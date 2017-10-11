@@ -141,7 +141,7 @@ static int create_directory(char *output_dir, char *slug);
  * @arg data Buffer with data received from the user
  * @arg path Path at which file containing data from the buffer will be created
  */
-static int save_to_file(uint8_t *data, char *output_dir, char *slug);
+static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug);
 
 
 // Logging-related
@@ -637,7 +637,7 @@ static void *handle_connection(void *args) {
 
 
     // Save to file failed, we have to finish here
-    if ( save_to_file(buffer, c->settings->output_dir_path, slug) != 0 ) {
+    if ( save_to_file(c->settings, buffer, slug) != 0 ) {
         print_error("Couldn't save a file!");
         print_separator();
 
@@ -739,11 +739,11 @@ static int create_directory(char *output_dir, char *slug) {
 }
 
 
-static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
+static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug) {
     char *file_name = "index.txt";
 
     // Additional 2 bytes are for 2 slashes
-    size_t len = strlen(output_dir) + strlen(slug) + strlen(file_name) + 3;
+    size_t len = strlen(s->output_dir_path) + strlen(slug) + strlen(file_name) + 3;
 
     // Generate a path
     char *path = malloc(len);
@@ -751,13 +751,21 @@ static int save_to_file(uint8_t *data, char *output_dir, char *slug) {
         return -1;
     }
 
-    snprintf(path, len, "%s%s%s%s%s", output_dir, "/", slug, "/", file_name);
+    snprintf(path, len, "%s%s%s%s%s", s->output_dir_path, "/", slug, "/", file_name);
 
     // Attempt file saving
     FILE *f = fopen(path, "w");
     if (!f) {
         free(path);
         return -1;
+    }
+
+    // Null-terminate buffer if not null terminated already
+    for (int i = 0; i < s->buffer_len; i++) {
+        if (data[i] == 0) {
+            break;
+        }
+        data[s->buffer_len - 1] = 0;
     }
 
     if ( fprintf(f, "%s", data) < 0 ) {
