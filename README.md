@@ -21,6 +21,18 @@ In case you installed and started fiche on localhost:
 ls -la | nc localhost 9999
 ```
 
+You will get an url to your paste as a response, e.g.:
+
+```
+http://termbin.com/ydxh
+```
+
+You can use our beautification service to get any paste colored and numbered. Just ask for it using `l.termbin.com` subdomain, e.g.:
+
+```
+http://l.termbin.com/ydxh
+```
+
 -------------------------------------------------------------------------------
 
 ## Useful aliases
