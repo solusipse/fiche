@@ -44,13 +44,20 @@ int main(int argc, char **argv) {
 
     // Parse input arguments
     int c;
-    while ((c = getopt(argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1) {
+    while ((c = getopt(argc, argv, "D6heSad:p:b:s:o:l:B:u:w:")) != -1) {
         switch (c) {
 
             // domain
             case 'd':
             {
                 fs.domain = optarg;
+            }
+            break;
+
+            // anonymous mode
+            case 'a':
+            {
+                fs.domain = NULL;
             }
             break;
 
@@ -117,7 +124,8 @@ int main(int argc, char **argv) {
             }
             break;
 
-            // Display help in case of any unsupported argument
+            // Display help in case of any unsupported argument or help
+            case 'h':
             default:
             {
                 printf("usage: fiche [-dpsSoBulbw].\n");

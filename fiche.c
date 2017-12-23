@@ -363,23 +363,28 @@ static void get_date(char *buf) {
 static int set_domain_name(Fiche_Settings *settings) {
 
     char *prefix = "";
-    if (settings->https) {
-        prefix = "https://";
-    } else {
+    if (settings->domain) {
+        if (settings->https) {
+            prefix = "https://";
+        } else {
         prefix = "http://";
+        }
+    } else {
+        prefix = "";
+        print_status("Domain is unset.");
+        return 0;
     }
     const int len = strlen(settings->domain) + strlen(prefix) + 1;
 
     char *b = malloc(len);
     if (!b) {
-        return -1;
+       return -1;
     }
 
     strcpy(b, prefix);
     strcat(b, settings->domain);
 
     settings->domain = b;
-
     print_status("Domain set to: %s.", settings->domain);
 
     return 0;
@@ -653,11 +658,14 @@ static void *handle_connection(void *args) {
     // Write a response to the user
     {
         // Create an url (additional byte for slash and one for new line)
-        const size_t len = strlen(c->settings->domain) + strlen(slug) + 3;
+        const size_t len = (c->settings->domain) ? strlen(c->settings->domain) + strlen(slug) + 3 : strlen(slug) + 2;
 
         char url[len];
-        snprintf(url, len, "%s%s%s%s", c->settings->domain, "/", slug, "\n");
-
+        if (c->settings->domain) {
+            snprintf(url, len, "%s%s%s%s", c->settings->domain, "/", slug, "\n");
+        } else {
+            snprintf(url, len, "%s%s", slug, "\n");
+        }
         // Send the response
         write(c->socket, url, len);
     }
