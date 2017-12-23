@@ -1,7 +1,7 @@
 # ignore binaries
 /fiche
 
-# ignore default output dir
+# ignore default outpit dir
 code/
 
 # ignore log files
