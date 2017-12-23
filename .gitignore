@@ -1,2 +1,8 @@
 # ignore binaries
 /fiche
+
+# ignore default output dir
+code/
+
+# ignore log files
+*.log
