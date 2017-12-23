@@ -9,7 +9,7 @@ addons:
     packages:
       - cppcheck
       - clang-3.5
-      
+
 install:
   - export PYTHONUSERBASE=~/.local
   - easy_install --user scan-build
