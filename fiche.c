@@ -370,7 +370,6 @@ static int set_domain_name(Fiche_Settings *settings) {
         prefix = "http://";
         }
     } else {
-        prefix = "";
         print_status("Domain is unset.");
         return 0;
     }
