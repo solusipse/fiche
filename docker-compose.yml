@@ -1,0 +1,28 @@
+version: "2"
+services:
+
+    fiche:
+      environment:
+        - INSIDE_TCP_PORT=1028
+        - VIRTUAL_HOST=fiche.localhost
+      build: .
+      ports:
+        - 9999:1028
+      volumes:
+        - fiche-volume:/app/outputs
+
+    nginx:
+      image: nginx
+      volumes:
+        - ./nginx-vhost.template:/etc/nginx/conf.d/fiche.template
+        - fiche-volume:/app/outputs
+      ports:
+         - "8080:80"
+      environment:
+       - NGINX_PORT=80
+       - VIRTUAL_HOST=fiche.localhost
+      command: /bin/bash -c "envsubst < /etc/nginx/conf.d/fiche.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    
+
+volumes:
+    fiche-volume:
