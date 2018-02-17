@@ -100,7 +100,7 @@ echo 'alias tbc="nc termbin.com 9999 | pbcopy"' >> .bash_profile
 echo less typing now! | tbc
 ```
 
-__Remember__ to restart your terminal session after adding any of provided above!
+__Remember__ to reload the shell with `source ~/.bashrc` or `source ~/.bash_profile` after adding any of provided above!
 
 -------------------------------------------------------------------------------
 
