@@ -26,6 +26,8 @@ $ cat fiche.c | nc localhost 9999
 -------------------------------------------------------------------------------
 */
 
+#define _GNU_SOURCE
+
 #include "fiche.h"
 
 #include <stdio.h>
@@ -46,7 +48,7 @@ $ cat fiche.c | nc localhost 9999
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in.h>
+#include <netinet/tcp.h>
 
 
 /******************************************************************************
@@ -655,11 +657,12 @@ static void *handle_connection(void *args) {
         // Create an url (additional byte for slash and one for new line)
         const size_t len = strlen(c->settings->domain) + strlen(slug) + 3;
 
-        char url[len];
-        snprintf(url, len, "%s%s%s%s", c->settings->domain, "/", slug, "\n");
+        char *url;
+        asprintf(&url, "%s%s%s%s", c->settings->domain, "/", slug, "\n");
 
         // Send the response
-        write(c->socket, url, len);
+        write(c->socket, url, len - 1);
+        free(url);
     }
 
     print_status("Received %d bytes, saved to: %s.", r, slug);
