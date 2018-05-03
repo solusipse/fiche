@@ -196,7 +196,7 @@ fiche -s 6
 __Output url with default value__: `http://localhost/xxxx`,
 where x is a randomized character
 
-__Output url with example value 6__: `http://localhost/xxxx`,
+__Output url with example value 6__: `http://localhost/xxxxxx`,
 where is a randomized character
 
 __Default value:__ 4
