@@ -319,8 +319,13 @@ server {
     charset utf-8;
 
     location / {
-            root /home/www/code/;
+            root /var/www/html/;
             index index.txt index.html;
+    }
+    
+    location ^~ /p {
+            root /home/fiche/pastebin/;
+            # that "root" is fiche -o option
     }
 }
 ```
