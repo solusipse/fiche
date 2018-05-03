@@ -302,7 +302,7 @@ ExecStart=/usr/local/bin/fiche -d yourdomain.com -o /path/to/output -l /path/to/
 WantedBy=multi-user.target
 ```
 
-__WARNING:__ In service mode you have to set output directory with `-o` parameter.
+__WARNING:__ In service mode you have to define output directory with `-o` parameter.
 
 -------------------------------------------------------------------------------
 
