@@ -1,3 +1,4 @@
+
 fiche [![Build Status](https://travis-ci.org/solusipse/fiche.svg?branch=master)](https://travis-ci.org/solusipse/fiche)
 =====
 
@@ -124,7 +125,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
     ```
     make
     ```
-    
+
 3. Install:
 
     ```
@@ -330,6 +331,30 @@ server {
     }
 }
 ```
+
+### Run using Docker
+
+Update the following `ENV` variables in `docker-compose.yml` :
+- `VIRTUAL_HOST` - it will set the `server_name` directive as well as `-d` flag of fiche accordingly.
+
+Update the outside binding port of `fiche`:
+```yaml
+      ports:
+        - 9999:1028
+```
+
+
+Update the outside binding port of `nginx`:
+```yaml
+       ports:
+         - "8080:80"
+ ```
+
+Then, issue a  `docker-compose up` in order to launch the server and nginx.
+
+A named volume is used in order to share the output directory `/app/outputs` between nginx and fiche.
+
+Running on Kubernetes, you will need to use nginx as a sidecar of fiche so that they share a mounted volume in the same fashion.
 
 ## License
 

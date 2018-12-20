@@ -1,0 +1,10 @@
+server {
+    listen ${NGINX_PORT};
+    server_name ${VIRTUAL_HOST};
+    charset utf-8;
+
+    location / {
+            root /app/outputs;
+            index index.txt index.html;
+    }
+}
