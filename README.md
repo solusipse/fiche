@@ -131,6 +131,12 @@ To use fiche you have to have netcat installed. You probably already have it - t
     sudo make install
     ```
 
+### Using Ports on FreeBSD
+
+To install the port: `cd /usr/ports/net/fiche/ && make install clean`. To add the package: `pkg install fiche`.
+
+_See [#86](https://github.com/solusipse/fiche/issues/86) for more info._
+
 -------------------------------------------------------------------------------
 
 ## Usage
