@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
     // Parse input arguments
     int c;
-    while ((c = getopt(argc, argv, "D6eSp:b:s:d:o:l:B:u:w:")) != -1) {
+    while ((c = getopt(argc, argv, "D6eSL:p:b:s:d:o:l:B:u:w:")) != -1) {
         switch (c) {
 
             // domain
@@ -58,6 +58,13 @@ int main(int argc, char **argv) {
             case 'p':
             {
                 fs.port = atoi(optarg);
+            }
+            break;
+
+            // listen_addr
+            case 'L':
+            {
+                fs.listen_addr = optarg;
             }
             break;
 
@@ -120,8 +127,8 @@ int main(int argc, char **argv) {
             // Display help in case of any unsupported argument
             default:
             {
-                printf("usage: fiche [-dpsSoBulbw].\n");
-                printf("             [-d domain] [-p port] [-s slug size]\n");
+                printf("usage: fiche [-dLpsSoBulbw].\n");
+                printf("             [-d domain] [-L listen_addr] [-p port] [-s slug size]\n");
                 printf("             [-o output directory] [-B buffer size] [-u user name]\n");
                 printf("             [-l log file] [-b banlist] [-w whitelist] [-S]\n");
                 return 0;

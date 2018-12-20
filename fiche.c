@@ -197,6 +197,8 @@ void fiche_init(Fiche_Settings *settings) {
         "example.com",
         // output dir
         "code",
+	// listen_addr
+	"0.0.0.0",
         // port
         9999,
         // slug length
@@ -442,7 +444,7 @@ static int start_server(Fiche_Settings *settings) {
     // Prepare address and port handler
     struct sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = inet_addr(settings->listen_addr);
     address.sin_port = htons(settings->port);
 
     // Bind to port
@@ -457,7 +459,8 @@ static int start_server(Fiche_Settings *settings) {
         return -1;
     }
 
-    print_status("Server started listening on port: %d.", settings->port);
+    print_status("Server started listening on: %s:%d.",
+		    settings->listen_addr, settings->port);
     print_separator();
 
     // Run dispatching loop

@@ -44,6 +44,11 @@ typedef struct Fiche_Settings {
     char *output_dir_path;
 
     /**
+     * @brief Address on which fiche is waiting for connections
+     */
+    char *listen_addr;
+
+    /**
      * @brief Port on which fiche is waiting for connections
      */
     uint16_t port;

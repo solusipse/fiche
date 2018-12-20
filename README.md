@@ -137,7 +137,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
 
 ```
 usage: fiche [-D6epbsdSolBuw].
-             [-d domain] [-p port] [-s slug size]
+             [-d domain] [-L listen_addr ] [-p port] [-s slug size]
              [-o output directory] [-B buffer size] [-u user name]
              [-l log file] [-b banlist] [-w whitelist] [-S]
 ```
