@@ -721,10 +721,9 @@ static int create_directory(char *output_dir, char *slug) {
     size_t len = strlen(output_dir) + strlen(slug) + 2;
 
     // Generate a path
-    char *path = malloc(len);
-    if (!path) {
-        return -1;
-    }
+    char path[len];
+    memset(path, 0, sizeof(path));
+
     snprintf(path, len, "%s%s%s", output_dir, "/", slug);
 
     // Create output directory, just in case
@@ -735,8 +734,6 @@ static int create_directory(char *output_dir, char *slug) {
         path,
         S_IRWXU | S_IRGRP | S_IROTH | S_IXOTH | S_IXGRP
     );
-
-    free(path);
 
     return r;
 }
@@ -749,17 +746,14 @@ static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug) {
     size_t len = strlen(s->output_dir_path) + strlen(slug) + strlen(file_name) + 3;
 
     // Generate a path
-    char *path = malloc(len);
-    if (!path) {
-        return -1;
-    }
+    char path[len];
+    memset(path, 0, sizeof(path));
 
     snprintf(path, len, "%s%s%s%s%s", s->output_dir_path, "/", slug, "/", file_name);
 
     // Attempt file saving
     FILE *f = fopen(path, "w");
     if (!f) {
-        free(path);
         return -1;
     }
 
@@ -768,12 +762,10 @@ static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug) {
 
     if ( fprintf(f, "%s", data) < 0 ) {
         fclose(f);
-        free(path);
         return -1;
     }
 
     fclose(f);
-    free(path);
 
     return 0;
 }
