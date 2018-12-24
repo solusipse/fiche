@@ -34,7 +34,7 @@ def beautify(slug):
         target_file = os.path.join(target_dir, "index.txt")
         
         # File index.txt found inside that dir
-        with open(target_file) as f:
+        with open(target_file, "r", encoding="utf-8") as f:
             code = f.read()
             # Identify language
             lexer = guess_lexer(code)
