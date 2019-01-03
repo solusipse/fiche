@@ -143,6 +143,14 @@ static int create_directory(char *output_dir, char *slug);
  */
 static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug);
 
+/**
+ * @brief Checks if IP contains in the given file
+ *
+ * @arg file list path that contains IPs
+ * @arg connection's IP address
+ */
+static int check_ip_in_list(const char *list_path, const char *ip);
+
 
 // Logging-related
 
@@ -264,7 +272,22 @@ int fiche_run(Fiche_Settings settings) {
             print_error("Log file not writable!");
             return -1;
         }
+    }
 
+    // Check if given banlist file is exists
+    if (settings.banlist_path) {
+        if (access(settings.banlist_path, F_OK) != 0) {
+            print_error("Banlist not exists!");
+            return -1;
+        }
+    }
+
+    // Check if given whitelist file is exists
+    if (settings.whitelist_path) {
+        if (access(settings.whitelist_path, F_OK) != 0) {
+            print_error("Whitelist not exists!");
+            return -1;
+        }
     }
 
     // Try to set domain name
@@ -582,11 +605,20 @@ static void *handle_connection(void *args) {
     // - Check if request was performed with a known protocol
     // TODO
 
-    // - Check if on whitelist
-    // TODO
+    if (c->settings->whitelist_path &&
+        check_ip_in_list(c->settings->whitelist_path, ip)) {
+        print_status("IP '%s' in the whitelist", ip);
+    }
+    else if (c->settings->banlist_path &&
+             check_ip_in_list(c->settings->banlist_path, ip)) {
+        print_error("IP '%s' in the blacklist", ip);
+        print_separator();
 
-    // - Check if on banlist
-    // TODO
+        // Cleanup
+        close(c->socket);
+        free(c);
+        pthread_exit(NULL);
+    }
 
     // Generate slug and use it to create an url
     char *slug;
@@ -614,9 +646,9 @@ static void *handle_connection(void *args) {
             print_separator();
 
             // Cleanup
+            close(c->socket);
             free(c);
             free(slug);
-            close(c->socket);
             pthread_exit(NULL);
             return NULL;
         }
@@ -684,6 +716,24 @@ static void *handle_connection(void *args) {
     return NULL;
 }
 
+static int check_ip_in_list(const char *list_path, const char *ip) {
+    FILE *f = fopen(list_path, "r");
+    if (f != NULL) {
+        char line[10];
+        while (fgets(line, sizeof(line), f) != NULL) {
+            if (strstr(line, ip)) {
+                fclose(f);
+                return 1;
+            }
+        }
+        fclose(f);
+    }
+    else {
+        print_status("Can't read from file %s!", list_path);
+    }
+    return 0;
+
+}
 
 static void generate_slug(char **output, uint8_t length, uint8_t extra_length) {
 
