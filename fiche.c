@@ -127,7 +127,7 @@ static void generate_slug(char **output, uint8_t length, uint8_t extra_length);
 
 /**
  * @brief Creates a directory at requested path using requested slug
- * @returns 0 if succeded, 1 if failed or dir already existed
+ * @returns 0 if succeeded, 1 if failed or dir already existed
  *
  * @arg output_dir root directory for all pastes
  * @arg slug directory name for a particular paste
