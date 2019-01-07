@@ -278,7 +278,7 @@ int fiche_run(Fiche_Settings settings) {
 
     // Perform final cleanup
 
-    // This is allways allocated on the heap
+    // This is always allocated on the heap
     free(settings.domain);
 
     return 0;
