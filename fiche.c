@@ -526,7 +526,7 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
         return;
     }
 
-    // Detach thread if created succesfully
+    // Detach thread if created successfully
     // TODO: consider using pthread_tryjoin_np
     pthread_detach(id);
 
