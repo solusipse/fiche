@@ -471,7 +471,7 @@ static int start_server(Fiche_Settings *settings) {
     // Give some time for all threads to finish
     // NOTE: this code is reached only in testing environment
     // There is currently no way to kill the main thread from any thread
-    // Something like this can be done for testing purpouses:
+    // Something like this can be done for testing purposes:
     // int i = 0;
     // while (i < 3) {
     //     dispatch_connection(s, settings);
