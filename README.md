@@ -124,7 +124,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
     ```
     make
     ```
-    
+
 3. Install:
 
     ```
@@ -187,7 +187,7 @@ fiche -d subdomain.domain.com
 fiche -d subdomain.domain.com/some_directory
 ```
 
-__Default value:__ `localhost`
+__Default value:__ `example.com`
 
 -------------------------------------------------------------------------------
 
