@@ -1,0 +1,11 @@
+[Unit]
+Description=Fiche server
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStartPre=/usr/bin/install -d -m 0755 -o fiche /var/lib/fiche/%i
+ExecStart=/usr/bin/fiche -d %i -o /var/lib/fiche/%i -l /var/log/fiche/%i.log -u fiche
+
+[Install]
+WantedBy=multi-user.target

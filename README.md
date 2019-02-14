@@ -131,6 +131,7 @@ To use fiche you have to have netcat installed. You probably already have it - t
     sudo make install
     ```
 
+Note: Adding `PREFIX=/path/to/directory` can override the default /usr/local/bin installation prefix, adittionally `DESTDIR` can also be set, and will be prepended
 ### Using Ports on FreeBSD
 
 To install the port: `cd /usr/ports/net/fiche/ && make install clean`. To add the package: `pkg install fiche`.
