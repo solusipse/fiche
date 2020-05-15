@@ -141,7 +141,8 @@ static int create_directory(char *output_dir, char *slug);
  * @arg data Buffer with data received from the user
  * @arg path Path at which file containing data from the buffer will be created
  */
-static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug);
+static int save_to_file(const Fiche_Settings *s, uint8_t *data, size_t datalen,
+        char *slug);
 
 
 // Logging-related
@@ -640,7 +641,7 @@ static void *handle_connection(void *args) {
 
 
     // Save to file failed, we have to finish here
-    if ( save_to_file(c->settings, buffer, slug) != 0 ) {
+    if ( save_to_file(c->settings, buffer, r, slug) != 0 ) {
         print_error("Couldn't save a file!");
         print_separator();
 
@@ -742,7 +743,7 @@ static int create_directory(char *output_dir, char *slug) {
 }
 
 
-static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug) {
+static int save_to_file(const Fiche_Settings *s, uint8_t *data, size_t datalen, char *slug) {
     char *file_name = "index.txt";
 
     // Additional 2 bytes are for 2 slashes
@@ -763,10 +764,7 @@ static int save_to_file(const Fiche_Settings *s, uint8_t *data, char *slug) {
         return -1;
     }
 
-    // Null-terminate buffer if not null terminated already
-    data[s->buffer_len - 1] = 0;
-
-    if ( fprintf(f, "%s", data) < 0 ) {
+    if ( fwrite(data, datalen, sizeof(uint8_t), f) == 0 ) {
         fclose(f);
         free(path);
         return -1;
