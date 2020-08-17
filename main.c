@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-            // https
+            // debug
             case 'D':
             {
                 debug = true;
