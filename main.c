@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
     // Parse input arguments
     int c;
-    while ((c = getopt(argc, argv, "D6eSL:p:b:s:d:o:l:B:u:w:")) != -1) {
+    while ((c = getopt(argc, argv, "D6eSL:p:b:s:d:o:l:B:u:w:c:k:")) != -1) {
         switch (c) {
 
             // domain
@@ -124,13 +124,35 @@ int main(int argc, char **argv) {
             }
             break;
 
+            // cert
+            case 'c':
+            {
+                fs.cert = optarg;
+            }
+            break;
+
+            // key
+            case 'k':
+            {
+                fs.key = optarg;
+            }
+            break;
+
+            // debug
+            case 'D':
+            {
+                debug = true;
+            }
+            break;
+
             // Display help in case of any unsupported argument
             default:
             {
-                printf("usage: fiche [-dLpsSoBulbw].\n");
+                printf("usage: fiche [-dLpsoBulbwSckD].\n");
                 printf("             [-d domain] [-L listen_addr] [-p port] [-s slug size]\n");
                 printf("             [-o output directory] [-B buffer size] [-u user name]\n");
                 printf("             [-l log file] [-b banlist] [-w whitelist] [-S]\n");
+                printf("             [-c cert file] [-k key file] [-D]\n");
                 return 0;
             }
             break;
