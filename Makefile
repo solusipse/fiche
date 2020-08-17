@@ -1,5 +1,5 @@
 # for debug add -g -O0 to line below
-CFLAGS+=-pthread -O2 -Wall -Wextra -Wpedantic -Wstrict-overflow -fno-strict-aliasing -std=gnu11 -g -O0
+CFLAGS+=-pthread -O2 -Wall -Wextra -Wpedantic -Wstrict-overflow -fno-strict-aliasing -std=gnu11 -g -O0 -lcrypto -lssl
 prefix=/usr/local/bin
 
 all:

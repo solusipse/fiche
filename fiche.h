@@ -90,7 +90,15 @@ typedef struct Fiche_Settings {
      */
     char *whitelist_path;
 
+    /**
+     * @brief Cert used in SSL
+     */
+    char *cert;
 
+    /**
+     * @brief Key used in SSL
+     */
+    char *key;
 
 } Fiche_Settings;
 
@@ -115,5 +123,9 @@ int fiche_run(Fiche_Settings settings);
  */
 extern const char *Fiche_Symbols;
 
+/**
+ * @brief debug on/off
+ */
+extern bool debug;
 
 #endif
