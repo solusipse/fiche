@@ -252,19 +252,29 @@ int fiche_run(Fiche_Settings settings) {
         }
     }
 
-    // Check if log file is writable (if set)
+    // Check if log file is valid and writable (if set)
     if ( settings.log_file_path ) {
 
-        // Create log file if it doesn't exist
-        FILE *f = fopen(settings.log_file_path, "a+");
-        fclose(f);
+        struct stat log_file_st;
+        memset(&log_file_st, 0, sizeof(struct stat));
 
-        // Then check if it's accessible
-        if ( access(settings.log_file_path, W_OK) != 0 ) {
-            print_error("Log file not writable!");
-            return -1;
+        if ( stat(settings.log_file_path, &log_file_st) == 0 ) {
+            // Is the log file a regular file?
+            if ( !S_ISREG(log_file_st.st_mode) ) {
+                print_error("Log file is not valid!");
+                return -1;
+            }
+
+            // Can we write to it?
+            if ( access(settings.log_file_path, W_OK) != 0 ) {
+                print_error("Log file is not writable!");
+                return -1;
+            }
+        } else {
+            // Log file doesn't exist - create it.
+            FILE *f = fopen(settings.log_file_path, "a+");
+            fclose(f);
         }
-
     }
 
     // Try to set domain name
