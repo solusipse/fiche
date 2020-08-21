@@ -34,6 +34,7 @@ $ cat fiche.c | nc localhost 9999
 #include <string.h>
 
 #include <pwd.h>
+#include <grp.h>
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -414,19 +415,35 @@ static int perform_user_change(const Fiche_Settings *settings) {
     // Get user details
     const struct passwd *userdata = getpwnam(settings->user_name);
 
-    const int uid = userdata->pw_uid;
-    const int gid = userdata->pw_gid;
-
-    if (uid == -1 || gid == -1) {
+    if (!userdata) {
         print_error("Could find requested user: %s!", settings->user_name);
         return -1;
     }
 
+    const uid_t uid = userdata->pw_uid;
+    const gid_t gid = userdata->pw_gid;
+
     if (setgid(gid) != 0) {
-        print_error("Couldn't switch to requested user: %s!", settings->user_name);
+        print_error("Couldn't switch to requested group for user: %s!", settings->user_name);
+    }
+
+    // Check if gid change actually happened.
+    if (getgid() != gid) {
+        print_error("Couldn't switch to requested group for user: %s!", settings->user_name);
+    }
+
+    // We must re-initialize supplementary groups to avoid inheriting
+    // root's supplementary groups.
+    if (initgroups(settings->user_name, gid) != 0) {
+        print_error("Couldn't initialize supplementary groups for user: %s!", settings->user_name);
     }
 
     if (setuid(uid) != 0) {
+        print_error("Couldn't switch to requested user: %s!", settings->user_name);
+    }
+
+    // Check if uid change actually happened.
+    if (getuid() != uid) {
         print_error("Couldn't switch to requested user: %s!", settings->user_name);
     }
 
