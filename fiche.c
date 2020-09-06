@@ -34,6 +34,7 @@ $ cat fiche.c | nc localhost 9999
 #include <string.h>
 
 #include <pwd.h>
+#include <grp.h>
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -252,19 +253,29 @@ int fiche_run(Fiche_Settings settings) {
         }
     }
 
-    // Check if log file is writable (if set)
+    // Check if log file is valid and writable (if set)
     if ( settings.log_file_path ) {
 
-        // Create log file if it doesn't exist
-        FILE *f = fopen(settings.log_file_path, "a+");
-        fclose(f);
+        struct stat log_file_st;
+        memset(&log_file_st, 0, sizeof(struct stat));
 
-        // Then check if it's accessible
-        if ( access(settings.log_file_path, W_OK) != 0 ) {
-            print_error("Log file not writable!");
-            return -1;
+        if ( stat(settings.log_file_path, &log_file_st) == 0 ) {
+            // Is the log file a regular file?
+            if ( !S_ISREG(log_file_st.st_mode) ) {
+                print_error("Log file is not valid!");
+                return -1;
+            }
+
+            // Can we write to it?
+            if ( access(settings.log_file_path, W_OK) != 0 ) {
+                print_error("Log file is not writable!");
+                return -1;
+            }
+        } else {
+            // Log file doesn't exist - create it.
+            FILE *f = fopen(settings.log_file_path, "a+");
+            fclose(f);
         }
-
     }
 
     // Try to set domain name
@@ -404,19 +415,35 @@ static int perform_user_change(const Fiche_Settings *settings) {
     // Get user details
     const struct passwd *userdata = getpwnam(settings->user_name);
 
-    const int uid = userdata->pw_uid;
-    const int gid = userdata->pw_gid;
-
-    if (uid == -1 || gid == -1) {
+    if (!userdata) {
         print_error("Could find requested user: %s!", settings->user_name);
         return -1;
     }
 
+    const uid_t uid = userdata->pw_uid;
+    const gid_t gid = userdata->pw_gid;
+
     if (setgid(gid) != 0) {
-        print_error("Couldn't switch to requested user: %s!", settings->user_name);
+        print_error("Couldn't switch to requested group for user: %s!", settings->user_name);
+    }
+
+    // Check if gid change actually happened.
+    if (getgid() != gid) {
+        print_error("Couldn't switch to requested group for user: %s!", settings->user_name);
+    }
+
+    // We must re-initialize supplementary groups to avoid inheriting
+    // root's supplementary groups.
+    if (initgroups(settings->user_name, gid) != 0) {
+        print_error("Couldn't initialize supplementary groups for user: %s!", settings->user_name);
     }
 
     if (setuid(uid) != 0) {
+        print_error("Couldn't switch to requested user: %s!", settings->user_name);
+    }
+
+    // Check if uid change actually happened.
+    if (getuid() != uid) {
         print_error("Couldn't switch to requested user: %s!", settings->user_name);
     }
 
