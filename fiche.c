@@ -535,6 +535,7 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
 
 static void *handle_connection(void *args) {
     char *slug = NULL;
+    uint8_t *buffer = NULL;
 
     // Cast args to it's previous type
     struct fiche_connection *c = (struct fiche_connection *) args;
@@ -562,10 +563,15 @@ static void *handle_connection(void *args) {
     }
 
     // Create a buffer
-    uint8_t buffer[c->settings->buffer_len];
-    memset(buffer, 0, c->settings->buffer_len);
+    buffer = calloc(c->settings->buffer_len, 1);
+    if (!buffer) {
+        print_error("Couldn't allocate the buffer!");
+        print_separator();
 
-    const int r = recv(c->socket, buffer, sizeof(buffer), MSG_WAITALL);
+        goto exit;
+    }
+
+    const int r = recv(c->socket, buffer, c->settings->buffer_len, MSG_WAITALL);
     if (r <= 0) {
         print_error("No data received from the client!");
         print_separator();
@@ -654,6 +660,7 @@ exit:
     close(c->socket);
 
     // Perform cleanup of values used in this thread
+    free(buffer);
     free(slug);
     free(c);
 
