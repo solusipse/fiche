@@ -33,6 +33,7 @@ $ cat fiche.c | nc localhost 9999
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
 #include <pwd.h>
 #include <time.h>
 #include <unistd.h>
@@ -520,11 +521,17 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
 
     // Spawn a new thread to handle this connection
     pthread_t id;
+    pthread_attr_t attr;
 
-    if ( pthread_create(&id, NULL, &handle_connection, c) != 0 ) {
+    if ( (errno = pthread_attr_init(&attr)) ||
+         (errno = pthread_attr_setstacksize(&attr, 128*1024)) ||
+         (errno = pthread_create(&id, &attr, &handle_connection, c)) ) {
+        pthread_attr_destroy(&attr);
         print_error("Couldn't spawn a thread!");
         return;
     }
+
+    pthread_attr_destroy(&attr);
 
     // Detach thread if created succesfully
     // TODO: consider using pthread_tryjoin_np
