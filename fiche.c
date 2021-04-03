@@ -664,8 +664,6 @@ exit:
     free(slug);
     free(c);
 
-    pthread_exit(NULL);
-
     return NULL;
 }
 
