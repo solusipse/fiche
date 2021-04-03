@@ -33,6 +33,7 @@ $ cat fiche.c | nc localhost 9999
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
 #include <pwd.h>
 #include <time.h>
 #include <unistd.h>
@@ -520,11 +521,17 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
 
     // Spawn a new thread to handle this connection
     pthread_t id;
+    pthread_attr_t attr;
 
-    if ( pthread_create(&id, NULL, &handle_connection, c) != 0 ) {
+    if ( (errno = pthread_attr_init(&attr)) ||
+         (errno = pthread_attr_setstacksize(&attr, 128*1024)) ||
+         (errno = pthread_create(&id, &attr, &handle_connection, c)) ) {
+        pthread_attr_destroy(&attr);
         print_error("Couldn't spawn a thread!");
         return;
     }
+
+    pthread_attr_destroy(&attr);
 
     // Detach thread if created succesfully
     // TODO: consider using pthread_tryjoin_np
@@ -534,6 +541,8 @@ static void dispatch_connection(int socket, Fiche_Settings *settings) {
 
 
 static void *handle_connection(void *args) {
+    char *slug = NULL;
+    uint8_t *buffer = NULL;
 
     // Cast args to it's previous type
     struct fiche_connection *c = (struct fiche_connection *) args;
@@ -561,22 +570,20 @@ static void *handle_connection(void *args) {
     }
 
     // Create a buffer
-    uint8_t buffer[c->settings->buffer_len];
-    memset(buffer, 0, c->settings->buffer_len);
+    buffer = calloc(c->settings->buffer_len, 1);
+    if (!buffer) {
+        print_error("Couldn't allocate the buffer!");
+        print_separator();
 
-    const int r = recv(c->socket, buffer, sizeof(buffer), MSG_WAITALL);
+        goto exit;
+    }
+
+    const int r = recv(c->socket, buffer, c->settings->buffer_len, MSG_WAITALL);
     if (r <= 0) {
         print_error("No data received from the client!");
         print_separator();
 
-        // Close the socket
-        close(c->socket);
-
-        // Cleanup
-        free(c);
-        pthread_exit(NULL);
-
-        return 0;
+        goto exit;
     }
 
     // - Check if request was performed with a known protocol
@@ -589,7 +596,6 @@ static void *handle_connection(void *args) {
     // TODO
 
     // Generate slug and use it to create an url
-    char *slug;
     uint8_t extra = 0;
 
     do {
@@ -613,12 +619,7 @@ static void *handle_connection(void *args) {
             print_error("Couldn't generate a valid slug!");
             print_separator();
 
-            // Cleanup
-            free(c);
-            free(slug);
-            close(c->socket);
-            pthread_exit(NULL);
-            return NULL;
+            goto exit;
         }
 
     }
@@ -630,12 +631,7 @@ static void *handle_connection(void *args) {
         print_error("Couldn't generate a slug!");
         print_separator();
 
-        close(c->socket);
-
-        // Cleanup
-        free(c);
-        pthread_exit(NULL);
-        return NULL;
+        goto exit;
     }
 
 
@@ -644,13 +640,7 @@ static void *handle_connection(void *args) {
         print_error("Couldn't save a file!");
         print_separator();
 
-        close(c->socket);
-
-        // Cleanup
-        free(c);
-        free(slug);
-        pthread_exit(NULL);
-        return NULL;
+        goto exit;
     }
 
     // Write a response to the user
@@ -672,14 +662,14 @@ static void *handle_connection(void *args) {
     // TODO: log unsuccessful and rejected connections
     log_entry(c->settings, ip, hostname, slug);
 
+exit:
     // Close the connection
     close(c->socket);
 
     // Perform cleanup of values used in this thread
+    free(buffer);
     free(slug);
     free(c);
-
-    pthread_exit(NULL);
 
     return NULL;
 }
