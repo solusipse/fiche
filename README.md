@@ -111,8 +111,10 @@ To use fiche you have to have netcat installed. You probably already have it - t
 
 # Server-side usage
 
-## Installation
-
+## Installation  
+  
+__Linux__  
+  
 1. Clone:
 
     ```
@@ -130,7 +132,30 @@ To use fiche you have to have netcat installed. You probably already have it - t
     ```
     sudo make install
     ```
+   
+__illumos__  
 
+The install target also imports the smf manifest, so it must be configured before running the install target. 
+
+1. Clone:
+
+    ```
+    git clone https://github.com/solusipse/fiche.git
+    ```
+
+2. Build:
+
+    ```
+    make
+    ```
+    
+3. Install:
+
+    ```
+    pfexec make install
+    ```
+
+__FreeBSD__
 ### Using Ports on FreeBSD
 
 To install the port: `cd /usr/ports/net/fiche/ && make install clean`. To add the package: `pkg install fiche`.
@@ -296,6 +321,8 @@ __WARNING:__ not implemented yet
 
 ### Running as a service
 
+__Linux__  
+  
 There's a simple systemd example:
 ```
 [Unit]
@@ -310,6 +337,74 @@ WantedBy=multi-user.target
 
 __WARNING:__ In service mode you have to set output directory with `-o` parameter.
 
+__illumos__  
+       
+To run fiche as a service an example [smf](https://wiki.smartos.org/basic-smf-commands/) manifest is provided (fiche.xml).  
+This manifest assumes that the user fiche exists and has a home directory to use 
+as a output directory (`-o` parameter).
+Also exec_method must be changed to match the required flags for your use case.
+    
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+        Created by Manifold
+--><service_bundle type="manifest" name="fiche">
+
+    <service name="network/fiche" type="service" version="1">
+
+        <create_default_instance enabled="false"/>
+        
+        <single_instance/>
+
+        <dependency name="network" grouping="require_all" restart_on="error" type="service">
+            <service_fmri value="svc:/milestone/network:default"/>
+        </dependency>
+
+        <dependency name="filesystem" grouping="require_all" restart_on="error" type="service">
+            <service_fmri value="svc:/system/filesystem/local"/>
+        </dependency>
+
+        
+        <method_context>
+            <method_credential user="fiche" />
+        </method_context>
+
+        <exec_method type="method" name="start" exec="/opt/local/bin/fiche -S -o /home/fiche/code -d example.com -l /var/log/fiche.log -s 6 " timeout_seconds="60"/>
+
+        <exec_method type="method" name="stop" exec=":kill" timeout_seconds="60"/>
+
+        <property_group name="startd" type="framework">
+            <propval name="duration" type="astring" value="child"/>
+            
+            
+            <propval name="ignore_error" type="astring" value="core,signal"/>
+        </property_group>
+
+        <property_group name="application" type="application">
+            
+        </property_group>
+        
+        
+        <stability value="Evolving"/>
+
+        <template>
+            <common_name>
+                <loctext xml:lang="C">
+                    fiche
+                </loctext>
+            </common_name>
+        </template>
+
+    </service>
+
+</service_bundle>
+```
+  
+Relevant information for smf is available on the following links:
+- https://www.joyent.com/blog/documentation-for-smf
+- https://docs.joyent.com/public-cloud/instances/infrastructure/images/smartos/managing-smartos/using-smf
+  
 -------------------------------------------------------------------------------
 
 ### Example nginx config

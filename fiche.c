@@ -175,8 +175,11 @@ static void log_entry(const Fiche_Settings *s, const char *ip,
  * @brief Returns string containing current date
  * @warning Output has to be freed!
  */
+#ifdef __sun
+static void get_date(char *buf, size_t len);
+#else
 static void get_date(char *buf);
-
+#endif
 
 /**
  * @brief Time seed
@@ -228,7 +231,11 @@ int fiche_run(Fiche_Settings settings) {
     // Display welcome message
     {
         char date[64];
+#ifdef __sun
+        get_date(date, sizeof(date));
+#else
         get_date(date);
+#endif
         print_status("Starting fiche on %s...", date);
     }
 
@@ -334,14 +341,37 @@ static void log_entry(const Fiche_Settings *s, const char *ip,
     }
 
     char date[64];
+#ifdef __sun
+    get_date(date, sizeof(date));
+#else
     get_date(date);
+#endif
 
     // Write entry to file
     fprintf(f, "%s -- %s -- %s (%s)\n", slug, date, ip, hostname);
     fclose(f);
 }
 
+#ifdef __sun
+static void get_date(char *buf, size_t len) {
+    struct tm curtime;
+    time_t ltime;
 
+    ltime=time(&ltime);
+    localtime_r(&ltime, &curtime);
+
+    // Save data to provided buffer
+    if (asctime_r(&curtime, buf,strnlen(buf,len) == 0)) {
+        // Couldn't get date, setting first byte of the
+        // buffer to zero so it won't be displayed
+        buf[0] = 0;
+        return;
+    }
+
+    // Remove newline char
+    buf[strlen(buf)-1] = 0;
+}
+#else
 static void get_date(char *buf) {
     struct tm curtime;
     time_t ltime;
@@ -360,8 +390,7 @@ static void get_date(char *buf) {
     // Remove newline char
     buf[strlen(buf)-1] = 0;
 }
-
-
+#endif
 static int set_domain_name(Fiche_Settings *settings) {
 
     char *prefix = "";
@@ -554,7 +583,11 @@ static void *handle_connection(void *args) {
     // Print status on this connection
     {
         char date[64];
+#ifdef __sun
+        get_date(date, sizeof(date));
+#else
         get_date(date);
+#endif
         print_status("%s", date);
 
         print_status("Incoming connection from: %s (%s).", ip, hostname);
