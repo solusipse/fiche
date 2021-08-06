@@ -130,6 +130,11 @@ To use fiche you have to have netcat installed. You probably already have it - t
     ```
     sudo make install
     ```
+## Docker
+
+```
+docker run TBA
+```
 
 ### Using Ports on FreeBSD
 
