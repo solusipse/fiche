@@ -132,9 +132,21 @@ To use fiche you have to have netcat installed. You probably already have it - t
     ```
 ## Docker
 
+### Running with Docker
+
+There is a Dockerfile and a docker-compose.yml in the repository.
+You can run fiche with docker by cloning the repository with:
+```bash
+git clone https://github.com/solusipse/fiche
 ```
-docker run TBA
+Edit the docker-compose.yml to your needs (change the Domain, Port and Directory).
+Finaly you can run fiche by typing
 ```
+docker-compose up -d
+```
+in your terminal in the repositories folder.
+
+After that, fiche should be running at the specified port and you can use a webserver to serve your files from the folder you specified on the Dockerhost.
 
 ### Using Ports on FreeBSD
 
@@ -314,25 +326,6 @@ WantedBy=multi-user.target
 ```
 
 __WARNING:__ In service mode you have to set output directory with `-o` parameter.
-
--------------------------------------------------------------------------------
-
-### Running with Docker
-
-There is a Dockerfile and a docker-compose.yml in the repository.
-You can run fiche with docker by cloning the repository with:
-```bash
-git clone https://github.com/solusipse/fiche 
-```
-Edit the docker-compose.yml to your needs (change the Domain, Port and Directory).
-Finaly you can run fiche by typing 
-```
-docker-compose up -d
-```
-in your terminal in the repositories folder.
-
-After that, fiche should be running at the specified port and you can use a webserver to serve your files from the folder you specified on the Dockerhost.
-
 
 -------------------------------------------------------------------------------
 
