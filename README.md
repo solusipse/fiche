@@ -317,6 +317,25 @@ __WARNING:__ In service mode you have to set output directory with `-o` paramete
 
 -------------------------------------------------------------------------------
 
+### Running with Docker
+
+There is a Dockerfile and a docker-compose.yml in the repository.
+You can run fiche with docker by cloning the repository with:
+```bash
+git clone https://github.com/solusipse/fiche 
+```
+Edit the docker-compose.yml to your needs (change the Domain, Port and Directory).
+Finaly you can run fiche by typing 
+```
+docker-compose up -d
+```
+in your terminal in the repositories folder.
+
+After that, fiche should be running at the specified port and you can use a webserver to serve your files from the folder you specified on the Dockerhost.
+
+
+-------------------------------------------------------------------------------
+
 ### Example nginx config
 
 Fiche has no http server built-in, thus you need to setup one if you want to make files available through http.
