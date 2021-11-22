@@ -1,2 +1,2 @@
 #!/bin/bash
-fiche -d $DOMAIN -o /home/data
+fiche -S -d $DOMAIN -o /home/data -l /home/data/log.txt

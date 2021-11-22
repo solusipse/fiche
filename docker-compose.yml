@@ -1,0 +1,10 @@
+services:
+  fiche:
+    build: .
+    volumes:
+      - /mnt/hdd/docker/fiche/data:/home/data
+    ports:
+      - 9999:9999
+    environment:
+      - DOMAIN=tbin.eu #change to your needs
+    restart: always
