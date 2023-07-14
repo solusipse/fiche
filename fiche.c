@@ -614,9 +614,9 @@ static void *handle_connection(void *args) {
             print_separator();
 
             // Cleanup
+            close(c->socket);
             free(c);
             free(slug);
-            close(c->socket);
             pthread_exit(NULL);
             return NULL;
         }
